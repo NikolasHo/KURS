@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Zutatenliste</h1>
+    <div class="row">
+        {% for zutat in zutaten %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ zutat.bild.url }}" class="card-img-top" alt="{{ zutat.beschreibung }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ zutat.beschreibung }}</h5>
+                        <p class="card-text">Mindesthaltbarkeitsdatum: {{ zutat.mindesthaltbarkeitsdatum }}</p>
+                        <p class="card-text">Anzahl: <span id="quantity-{{ zutat.id }}">{{ zutat.anzahl }}</span></p>
+                        <p class="card-text">Rubrik: {{ zutat.rubrik }}</p>
+                        <button class="btn btn-danger reduce-quantity" data-id="{{ zutat.id }}">-</button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Füge einen Event Listener für den Klick auf den Button hinzu
+        document.addEventListener('DOMContentLoaded', function() {
+            var reduceButtons = document.getElementsByClassName('reduce-quantity');
+            
+            for (var i = 0; i < reduceButtons.length; i++) {
+                reduceButtons[i].addEventListener('click', function() {
+                    var zutatId = this.getAttribute('data-id');
+                    var quantityElement = document.getElementById('quantity-' + zutatId);
+                    var quantity = parseInt(quantityElement.innerText);
+                    
+                    if (quantity > 0) {
+                        // Reduziere die Anzahl um 1
+                        quantity -= 1;
+                        
+                        // Aktualisiere die Anzeige der Anzahl
+                        quantityElement.innerText = quantity;
+                        
+                        if (quantity === 0) {
+                            // Wenn die Anzahl 0 erreicht ist, entferne die Zutat aus der Liste
+                            this.parentNode.parentNode.parentNode.remove();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

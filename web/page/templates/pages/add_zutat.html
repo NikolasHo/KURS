@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zutat hinzufügen</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+        /* Füge hier dein eigenes CSS hinzu, um das Design anzupassen */
+        body {
+            padding-top: 60px;
+        }
+        .container {
+            max-width: 500px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zutat hinzufügen</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_bild">Bild</label>
+                <input type="file" name="bild" id="id_bild" required>
+            </div>
+            <div class="form-group">
+                <label for="id_beschreibung">Beschreibung</label>
+                <textarea name="beschreibung" id="id_beschreibung" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="id_mindesthaltbarkeitsdatum">Mindesthaltbarkeitsdatum</label>
+                <input type="date" name="mindesthaltbarkeitsdatum" id="id_mindesthaltbarkeitsdatum" required>
+            </div>
+            <div class="form-group">
+                <label for="id_anzahl">Anzahl</label>
+                <input type="number" name="anzahl" id="id_anzahl" required>
+            </div>
+            <div class="form-group">
+                <label for="id_rubrik">Rubrik</label>
+                <input type="text" name="rubrik" id="id_rubrik" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Zutat hinzufügen</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>

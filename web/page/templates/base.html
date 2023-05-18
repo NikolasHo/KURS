@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KURS</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+        /* Füge hier dein eigenes CSS hinzu, um das Design anzupassen */
+        body {
+            padding-top: 60px;
+        }
+        .navbar {
+            width: 200px; /* Breite der vertikalen Navbar */
+            background-color: #f8f9fa;
+            height: 100vh; /* volle Höhe des Viewports */
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            padding-top: 60px;
+			align-items: flex-start;
+        }
+        .navbar-nav {
+            width: 100%;
+
+        }
+        .navbar-nav .nav-link {
+            padding: 10px 20px;
+        }
+        .navbar-collapse {
+            justify-content: flex-start;
+        }
+        .navbar-brand {
+            margin-bottom: 1rem;
+        }
+        .content {
+            margin-left: 200px; /* Breite der vertikalen Navbar */
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav flex-column">
+                <li class="nav-item">
+                    <a class="navbar-brand" href="#">KURS</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'rezepte' %}">Rezepte</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'zutaten_liste' %}">Zutaten</a>
+                </li>     
+            </ul>
+        </div>
+    </nav>
+
+    <div class="content">
+        {% block content %}
+        <!-- Hier kommt der Inhalt deiner Seite hin -->
+        {% endblock %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>
