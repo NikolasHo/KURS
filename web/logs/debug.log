@@ -1,0 +1,638 @@
+Watching for file changes with StatReloader
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+HALLO
+Internal Server Error: /update_quantity/2/
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\web\page\views.py", line 41, in update_quantity
+    zutat.save()
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 877, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 990, in _save_table
+    updated = self._do_update(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\query.py", line 1231, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1982, in execute_sql
+    cursor = super().execute_sql(result_type)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1560, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 102, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+<WSGIRequest: POST '/update_quantity/2/'>
+Internal Server Error: /update_quantity/2/
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\web\page\views.py", line 41, in update_quantity
+    zutat.save()
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 877, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 990, in _save_table
+    updated = self._do_update(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\query.py", line 1231, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1982, in execute_sql
+    cursor = super().execute_sql(result_type)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1560, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 102, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+Watching for file changes with StatReloader
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+<WSGIRequest: POST '/update_quantity/2/'>
+Internal Server Error: /update_quantity/2/
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\web\page\views.py", line 41, in update_quantity
+    zutat.save()
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 877, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 990, in _save_table
+    updated = self._do_update(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\query.py", line 1231, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1982, in execute_sql
+    cursor = super().execute_sql(result_type)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1560, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 102, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Anzahl ändern
+Neue Anzahl: None
+Internal Server Error: /update_quantity/2/
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\web\page\views.py", line 42, in update_quantity
+    zutat.save()
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 814, in save
+    self.save_base(
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 877, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 990, in _save_table
+    updated = self._do_update(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\base.py", line 1054, in _do_update
+    return filtered._update(values) > 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\query.py", line 1231, in _update
+    return query.get_compiler(self.db).execute_sql(CURSOR)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1982, in execute_sql
+    cursor = super().execute_sql(result_type)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\models\sql\compiler.py", line 1560, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 102, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 328, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: page_zutat.anzahl
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Anzahl ändern
+Die Anzahl für Zutat 2 wurde erfolgreich auf 4 aktualisiert.
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Anzahl ändern
+Die Anzahl für Zutat 2 wurde erfolgreich auf 3 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 2 wurde erfolgreich auf 2 aktualisiert.
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Anzahl ändern
+Die Anzahl für Zutat 3 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 3 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 3 wurde erfolgreich auf 0 aktualisiert.
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Anzahl ändern
+Die Anzahl für Zutat 3 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Zutat 3 wurde erfolgreich gelöscht.
+Fehler beim Aktualisieren der Anzahl.
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Anzahl ändern
+Die Anzahl für Zutat 2 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Zutat 2 wurde erfolgreich gelöscht.
+Fehler beim Aktualisieren der Anzahl.
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Not Found: /media/zutaten/0a8e5e41-1116-4405-9217-dbbe42ba2988.JPEG
+Anzahl ändern
+Die Anzahl für Zutat 1 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Zutat 1 wurde erfolgreich gelöscht.
+Fehler beim Aktualisieren der Anzahl.
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\models.py changed, reloading.
+Watching for file changes with StatReloader
+Anzahl ändern
+Die Anzahl für Zutat 7 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 3 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 5 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 5 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 6 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 6 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 2 aktualisiert.
+Anzahl ändern
+Die Anzahl für Zutat 4 wurde erfolgreich auf 1 aktualisiert.
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Anzahl ändern
+Anzahl ändern
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 4 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 5 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 6 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 7 wurde erfolgreich gelöscht.
+Die Anzahl ist 0
+Die Zutat 7 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 3
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 8 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 9 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 3
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 10 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 3
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 11 wurde erfolgreich gelöscht.
+Anzahl ändern
+Not Found: /update_quantity/11/
+Anzahl ändern
+Not Found: /update_quantity/11/
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 12 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 13 wurde erfolgreich gelöscht.
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 14 wurde erfolgreich gelöscht.
+Anzahl ändern
+Not Found: /update_quantity/14/
+Anzahl ändern
+Not Found: /update_quantity/14/
+Anzahl ändern
+Not Found: /update_quantity/14/
+Anzahl ändern
+Not Found: /update_quantity/14/
+Watching for file changes with StatReloader
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 15 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 16 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 17 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Anzahl ändern
+Die Anzahl ist 0
+Die Anzahl ist 0
+Die Zutat 18 wurde erfolgreich gelöscht.
+Die Zutat 18 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 32
+Anzahl ändern
+Die Anzahl ist 31
+Anzahl ändern
+Die Anzahl ist 30
+Anzahl ändern
+Die Anzahl ist 29
+Anzahl ändern
+Die Anzahl ist 28
+Anzahl ändern
+Die Anzahl ist 27
+Anzahl ändern
+Die Anzahl ist 26
+Anzahl ändern
+Die Anzahl ist 25
+Anzahl ändern
+Die Anzahl ist 24
+Anzahl ändern
+Die Anzahl ist 23
+Anzahl ändern
+Die Anzahl ist 22
+Anzahl ändern
+Die Anzahl ist 21
+Anzahl ändern
+Die Anzahl ist 20
+Anzahl ändern
+Die Anzahl ist 19
+Anzahl ändern
+Die Anzahl ist 18
+Anzahl ändern
+Die Anzahl ist 17
+Anzahl ändern
+Die Anzahl ist 16
+Anzahl ändern
+Die Anzahl ist 15
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Die Anzahl ist 0
+Die Zutat 20 wurde erfolgreich gelöscht.
+Anzahl ändern
+Die Anzahl ist 14
+Anzahl ändern
+Die Anzahl ist 13
+Anzahl ändern
+Die Anzahl ist 12
+Anzahl ändern
+Die Anzahl ist 11
+Anzahl ändern
+Die Anzahl ist 10
+Anzahl ändern
+Die Anzahl ist 9
+Anzahl ändern
+Die Anzahl ist 8
+Anzahl ändern
+Die Anzahl ist 7
+Anzahl ändern
+Die Anzahl ist 6
+Anzahl ändern
+Die Anzahl ist 5
+Anzahl ändern
+Die Anzahl ist 4
+Anzahl ändern
+Die Anzahl ist 3
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Anzahl ändern
+Die Anzahl ist 0
+Die Anzahl ist 0
+Die Zutat 19 wurde erfolgreich gelöscht.
+Internal Server Error: /update_quantity/19/
+Traceback (most recent call last):
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projekte\KURS\web\page\views.py", line 53, in update_quantity
+    default_storage.delete(image_path)
+  File "C:\Projekte\KURS\venv\Lib\site-packages\django\core\files\storage\filesystem.py", line 158, in delete
+    os.remove(name)
+PermissionError: [WinError 5] Zugriff verweigert: 'C:\\Projekte\\KURS\\web\\media\\zutaten\\6cabf60c-3c7f-44a6-aea2-1c6d56b2b520.JPEG'
+Not Found: /zutaten/hinzufügen
+Not Found: /zutaten/hinzufügen
+Not Found: /zutaten/hinzufügen
+Anzahl ändern
+Die Anzahl ist 2
+Anzahl ändern
+Die Anzahl ist 1
+Anzahl ändern
+Anzahl ändern
+Die Anzahl ist 0
+Die Anzahl ist 0
+Die Zutat 22 wurde erfolgreich gelöscht.
+Die Zutat 22 wurde erfolgreich gelöscht.
+Not Found: /zutaten/hinzufügen
+Not Found: /zutaten/hinzufügen
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\forms.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Projekte\KURS\web\page\views.py changed, reloading.
+Watching for file changes with StatReloader
