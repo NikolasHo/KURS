@@ -2,8 +2,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-
 <style>
     .card-img-top {
         height: 400px; /* Gib hier die gewünschte Höhe für die Bilder an */
@@ -25,10 +23,18 @@
         }
     }
 	
+	 .add-button {
+        height: 400px;
+    }
+    
+     .add-button i {
+        font-size: 8rem;
+        font-weight: bold;
+    }
 </style>
 
 <h1 class="d-inline-block">Zutatenliste</h1>
-<a href="add/" class="btn btn-primary float-right">Zutat hinzufügen</a>
+
 
 <div class="row">
     {% for ingredient in ingredients %}
@@ -51,6 +57,19 @@
             </div>
         </div>
     {% endfor %}
+
+    <div class="col-md-4">
+        <div class="card">
+			<div class="card-header">
+                <h5 class="card-title">Neue Zutat hinzufügen</h5>
+            </div>
+           <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 400px;">
+            <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
+                <i class="fas fa-plus">+</i>
+            </button>
+        </div>
+        </div>
+    </div>
 </div>
 
 
@@ -79,8 +98,6 @@
                 
                 var card = document.getElementById('card-' + ingredientId);
                 card.parentNode.removeChild(card);
-    
-                
             }
 
             // Sende AJAX-Anfrage an den Server, um die Anzahl zu aktualisieren
@@ -147,5 +164,10 @@
         }
         return cookieValue;
     }
+	
+	 function navigateToAddPage() {
+        window.location.href = 'add/';
+    }
 </script>
+
 {% endblock %}
