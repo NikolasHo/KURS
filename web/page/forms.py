@@ -1,7 +1,7 @@
 from django import forms
-from .models import Zutat
+from .models import Ingredient
 
-class ZutatForm(forms.ModelForm):
+class IngredientForm(forms.ModelForm):
     class Meta:
-        model = Zutat
+        model = Ingredient
         fields = '__all__'

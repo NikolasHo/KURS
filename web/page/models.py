@@ -4,7 +4,6 @@ from django.db import models
 
     
 ### Helpers
-
 def upload_image(instance, filename):
     # Erzeuge einen eindeutigen Dateinamen
     unique_filename = str(uuid4())
@@ -16,18 +15,18 @@ def upload_image(instance, filename):
     new_filename = unique_filename + extension
 
     # Gib den Pfad zurück, unter dem die Datei gespeichert werden soll
-    return os.path.join('zutaten/', new_filename)
+    return os.path.join('ingredients/', new_filename)
 
 
 
 ### Models
-# Create your models here.
-class Zutat(models.Model):
-    bild = models.ImageField(upload_to=upload_image)
-    beschreibung = models.TextField()
-    mindesthaltbarkeitsdatum = models.DateField()
-    anzahl = models.PositiveIntegerField()
-    rubrik = models.CharField(max_length=255)
+
+class Ingredient(models.Model):
+    img = models.ImageField(upload_to=upload_image)
+    description = models.TextField()
+    mhd = models.DateField()
+    quantity = models.PositiveIntegerField()
+    tag = models.CharField(max_length=255)
     
     
     

@@ -1,0 +1,151 @@
+<!-- zutaten_liste.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<style>
+    .card-img-top {
+        height: 400px; /* Gib hier die gewünschte Höhe für die Bilder an */
+        object-fit: cover;
+    }
+	
+	.card-highlight {
+        animation: cardHighlight 0.3s;
+        animation-fill-mode: forwards;
+    }
+    
+    @keyframes cardHighlight {
+        0% {
+            outline: 2px solid blue;
+        }
+        
+        100% {
+            outline: none;
+        }
+    }
+	
+</style>
+
+<h1 class="d-inline-block">Zutatenliste</h1>
+<a href="add/" class="btn btn-primary float-right">Zutat hinzufügen</a>
+
+<div class="row">
+    {% for ingredient in ingredients %}
+        <div class="col-md-4">
+            <div class="card" id="card-{{ ingredient.id }}" onclick="highlightCard(this)">
+                <div class="card-header">
+                    <h5 class="card-title">{{ ingredient.description }}</h5>
+                </div>
+                <img src="{{ ingredient.img.url }}" class="card-img-top" alt="{{ ingredient.description }}"
+                    onclick="reduceQuantity('{{ ingredient.id }}')">
+                <div class="card-body">
+                    <p class="card-text">Mindesthaltbarkeitsdatum: {{ ingredient.mhd }}</p>
+                    <p class="card-text">Anzahl: <span id="quantity-{{ ingredient.id }}">{{ ingredient.quantity }}</span></p>
+                    <p class="card-text">Rubrik: {{ ingredient.tag }}</p>
+                    <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
+                        <button class="btn btn-success increase-quantity" data-id="{{ ingredient.id }}"
+                            onclick="increaseQuantity('{{ ingredient.id }}')">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+<script>
+    function highlightCard(card) {
+        card.classList.add('card-highlight');
+        setTimeout(function() {
+            card.classList.remove('card-highlight');
+        }, 300);
+    }
+
+    function reduceQuantity(ingredientId) {
+        var quantityElement = document.getElementById('quantity-' + ingredientId);
+        var quantity = parseInt(quantityElement.innerText);
+
+        if (quantity > 0) {
+            // Reduziere die Anzahl um 1
+            quantity -= 1;
+
+            // Aktualisiere die Anzeige der Anzahl
+            quantityElement.innerText = quantity;
+
+            if (quantity === 0) {
+                // Wenn die Anzahl 0 erreicht ist, entferne die Zutat aus der Liste
+                updateQuantityOnServer(ingredientId, quantity);
+                
+                var card = document.getElementById('card-' + ingredientId);
+                card.parentNode.removeChild(card);
+    
+                
+            }
+
+            // Sende AJAX-Anfrage an den Server, um die Anzahl zu aktualisieren
+            updateQuantityOnServer(ingredientId, quantity);
+        }
+    }
+
+    function increaseQuantity(ingredientId) {
+        var quantityElement = document.getElementById('quantity-' + ingredientId);
+        var quantity = parseInt(quantityElement.innerText);
+
+        // Erhöhe die Anzahl um 1
+        quantity += 1;
+
+        // Aktualisiere die Anzeige der Anzahl
+        quantityElement.innerText = quantity;
+
+        // Sende AJAX-Anfrage an den Server, um die Anzahl zu aktualisieren
+        updateQuantityOnServer(ingredientId, quantity);
+    }
+
+
+    function updateQuantityOnServer(ingredientId, quantity) {
+        var url = '/update_quantity/' + ingredientId + '/';
+        var csrftoken = getCookie('csrftoken');
+        var data = {
+            'new_quantity': quantity
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Quantity was updated');
+            } else {
+                console.log('Error while update quantity');
+            }
+        })
+        .catch(error => {
+            console.log('Error while sending Ajax request:', error);
+        });
+    }
+
+    // Funktion zum Abrufen des CSRF-Tokens aus den Cookies
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Überprüfe, ob der Cookie den Namen 'csrftoken' hat
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

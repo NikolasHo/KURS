@@ -6,8 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
-from .models import Zutat
-from .forms import ZutatForm
+from .models import Ingredient
+from .forms import IngredientForm
 
 # Create your views here.
 ###urls
@@ -21,42 +21,46 @@ def rezepte(request):
 
 
 ###helpers
-def zutaten_liste(request):
-    zutaten = Zutat.objects.all()
-    return render(request, 'pages/zutaten_liste.html', {'zutaten': zutaten})
+def ingredients_list(request):
+    ingredients = Ingredient.objects.all()
+    return render(request, 'pages/ingredients_list.html', {'ingredients': ingredients})
 
-def zutat_hinzufuegen(request):
+def add_ingredients(request):
     if request.method == 'POST':
-        form = ZutatForm(request.POST, request.FILES)
+        form = IngredientForm(request.POST, request.FILES)
+        logger = logging.getLogger(__name__)
+        logger.info(f"{form.errors}")
+        
+        
         if form.is_valid():
             form.save()
-            return redirect('zutaten_liste')
+            return redirect('ingredients_list')
     else:
-        form = ZutatForm()
-    return render(request, 'pages/add_zutat.html', {'form': form})
+        form = IngredientForm()
+    return render(request, 'pages/add_ingredients.html', {'form': form})
 
-def update_quantity(request, zutat_id):
+def update_quantity(request, ingredient_id):
     logger = logging.getLogger(__name__)
-    logger.info(f"Anzahl ändern")
-    zutat = get_object_or_404(Zutat, id=zutat_id)
+    logger.info(f"Change quantity")
+    ingredient = get_object_or_404(Ingredient, id=ingredient_id)
     if request.method == 'POST':
 
         data = json.loads(request.body)
         new_quantity = data.get('new_quantity')
-        zutat.anzahl = new_quantity
+        ingredient.quantity = new_quantity
        
         logger.info(f"Die Anzahl ist {new_quantity}")
         if new_quantity == 0:
-            if zutat.bild:
-                image_path = os.path.join(settings.MEDIA_ROOT, str(zutat.bild))
+            if ingredient.img:
+                image_path = os.path.join(settings.MEDIA_ROOT, str(ingredient.img))
                 if default_storage.exists(image_path):
                     default_storage.delete(image_path)
             
-            zutat.delete()
-            logger.info(f"Die Zutat {zutat_id} wurde erfolgreich gelöscht.")
+            ingredient.delete()
+            logger.info(f"Die Zutat {ingredient_id} wurde erfolgreich gelöscht.")
      
             return JsonResponse({'success': True, 'message': 'Zutat erfolgreich gelöscht.'})
-        zutat.save()
+        ingredient.save()
         return JsonResponse({'success': True, 'new_quantity': new_quantity})
     logger.error("Fehler beim Aktualisieren der Anzahl.")
     return JsonResponse({'success': False})

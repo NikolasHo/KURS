@@ -22,24 +22,24 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
-                <label for="id_bild">Bild</label>
-                <input type="file" name="bild" id="id_bild" required>
+                <label for="id_img">Bild</label>
+                <input type="file" name="img" id="id_img" required>
             </div>
             <div class="form-group">
-                <label for="id_beschreibung">Beschreibung</label>
-                <textarea name="beschreibung" id="id_beschreibung" rows="5" required></textarea>
+                <label for="id_description">Beschreibung</label>
+                <textarea name="description" id="id_description" rows="5" required></textarea>
             </div>
             <div class="form-group">
-                <label for="id_mindesthaltbarkeitsdatum">Mindesthaltbarkeitsdatum</label>
-                <input type="date" name="mindesthaltbarkeitsdatum" id="id_mindesthaltbarkeitsdatum" required>
+                <label for="id_mhd">Mindesthaltbarkeitsdatum</label>
+                <input type="date" name="mhd" id="id_mhd" required>
             </div>
             <div class="form-group">
-                <label for="id_anzahl">Anzahl</label>
-                <input type="number" name="anzahl" id="id_anzahl" required>
+                <label for="id_quantity">Anzahl</label>
+                <input type="number" name="quantity" id="id_quantity" required>
             </div>
             <div class="form-group">
-                <label for="id_rubrik">Rubrik</label>
-                <input type="text" name="rubrik" id="id_rubrik" required>
+                <label for="id_tag">Rubrik</label>
+                <input type="text" name="tag" id="id_tag" required>
             </div>
             <button type="submit" class="btn btn-primary">Zutat hinzufügen</button>
         </form>
