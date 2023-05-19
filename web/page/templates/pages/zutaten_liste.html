@@ -9,6 +9,21 @@
         height: 400px; /* Gib hier die gewünschte Höhe für die Bilder an */
         object-fit: cover;
     }
+	
+	.card-highlight {
+        animation: cardHighlight 0.3s;
+        animation-fill-mode: forwards;
+    }
+    
+    @keyframes cardHighlight {
+        0% {
+            outline: 2px solid blue;
+        }
+        
+        100% {
+            outline: none;
+        }
+    }
 </style>
 
 <h1 class="d-inline-block">Zutatenliste</h1>
@@ -17,7 +32,7 @@
 <div class="row">
     {% for zutat in zutaten %}
         <div class="col-md-4">
-            <div class="card" id="card-{{ zutat.id }}">
+            <div class="card" id="card-{{ zutat.id }}" onclick="highlightCard(this)">
                 <div class="card-header">
                     <h5 class="card-title">{{ zutat.beschreibung }}</h5>
                 </div>
@@ -39,6 +54,13 @@
 
 
     <script>
+	function highlightCard(card) {
+        card.classList.add('card-highlight');
+        setTimeout(function() {
+            card.classList.remove('card-highlight');
+        }, 300);
+    }
+	
         function reduceQuantity(zutatId) {
             var quantityElement = document.getElementById('quantity-' + zutatId);
             var quantity = parseInt(quantityElement.innerText);
