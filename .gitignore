@@ -1,4 +1,7 @@
 venv/
 web/logs/
 web/media/
+web/cert.pem
+web/key.pem
+web/db.sqlite3
 **/__pycache__/*
