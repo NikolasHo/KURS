@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Zutat hinzufügen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <style>
         /* Füge hier dein eigenes CSS hinzu, um das Design anzupassen */
@@ -23,25 +24,25 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="id_img">Bild</label>
-                <input type="file" name="img" id="id_img" required>
+                <input type="file" class="form-control-file" accept="image/*" capture="camera" name="img" id="id_img" required>
             </div>
             <div class="form-group">
                 <label for="id_description">Beschreibung</label>
-                <textarea name="description" id="id_description" rows="5" required></textarea>
+                <textarea name="description" class="form-control" id="id_description" rows="5" required></textarea>
             </div>
             <div class="form-group">
                 <label for="id_mhd">Mindesthaltbarkeitsdatum</label>
-                <input type="date" name="mhd" id="id_mhd" required>
+                <input type="date" class="form-control" name="mhd" id="id_mhd" required>
             </div>
             <div class="form-group">
                 <label for="id_quantity">Anzahl</label>
-                <input type="number" name="quantity" id="id_quantity" required>
+                <input type="number" class="form-control" name="quantity" id="id_quantity" required>
             </div>
             <div class="form-group">
                 <label for="id_tag">Rubrik</label>
-                <input type="text" name="tag" id="id_tag" required>
+                <input type="text" class="form-control" name="tag" id="id_tag" required>
             </div>
-            <button type="submit" class="btn btn-primary">Zutat hinzufügen</button>
+            <button type="submit" class="btn btn-primary btn-block">Zutat hinzufügen</button>
         </form>
     </div>
 
