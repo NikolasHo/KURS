@@ -24,3 +24,9 @@ If you want to access this webiste with an IOS device, you need to transfer the 
 https://github.com/FiloSottile/mkcert/issues/233#issuecomment-690110809
 
 Now you can access your website on your iOS device with https.
+
+
+Superuser:
+admin
+admin@admin.com
+admin

@@ -35,10 +35,21 @@
 	.row-gap {
     margin: 10px;
 	}
+
 </style>
 
 <h1 class="d-inline-block">Zutatenliste</h1>
 
+<!-- Dropdown-Menü für die Tag-Auswahl -->
+<div class="form-group">
+    <label for="tag-select">Tag auswählen:</label>
+    <select class="form-control" id="tag-select" onchange="filterCards()">
+        <option value="">Alle</option>
+        {% for tag in used_tags %}
+            <option value="{{ tag.name }}">{{ tag.name }}</option>
+        {% endfor %}
+    </select>
+</div>
 
 <div class="row">
     {% for ingredient in ingredients %}
@@ -47,7 +58,7 @@
 			<p></p>
 			<div class="row">
         {% endif %}
-        <div class="col-md-4">
+        <div class="col-md-4 card-column" data-tags="{{ ingredient.tags.all|join:',' }}">
             <div class="card" id="card-{{ ingredient.id }}" onclick="highlightCard(this)">
                 <div class="card-header">
                     <h5 class="card-title">{{ ingredient.description }}</h5>
@@ -57,7 +68,7 @@
                 <div class="card-body">
                     <p class="card-text">Mindesthaltbarkeitsdatum: {{ ingredient.mhd }}</p>
                     <p class="card-text">Anzahl: <span id="quantity-{{ ingredient.id }}">{{ ingredient.quantity }}</span></p>
-                    <p class="card-text">Rubrik: {{ ingredient.tag }}</p>
+                    <p class="card-text">Rubrik: {% for tmp_tag in ingredient.tags.all %}{{ tmp_tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
                     <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
                         <button class="btn btn-success increase-quantity" data-id="{{ ingredient.id }}"
                             onclick="increaseQuantity('{{ ingredient.id }}')">+</button>
@@ -85,7 +96,7 @@
 
 
 <script>
-    function highlightCard(card) {
+      function highlightCard(card) {
         card.classList.add('card-highlight');
         setTimeout(function() {
             card.classList.remove('card-highlight');
@@ -179,6 +190,28 @@
 	 function navigateToAddPage() {
         window.location.href = 'add/';
     }
+	
+	function filterCards() {
+        var selectElement = document.getElementById('tag-select');
+        var selectedTagId = selectElement.value;
+        var cardColumns = document.getElementsByClassName('card-column');
+
+        for (var i = 0; i < cardColumns.length; i++) {
+            var cardColumn = cardColumns[i];
+            var tags = cardColumn.getAttribute('data-tags').split(',');
+			console.log("datatags:" + tags);
+			console.log("selected tag:" + selectedTagId);
+            if (selectedTagId === '' || tags.includes(selectedTagId)) {
+				console.log("found");
+                cardColumn.style.display = 'block';
+            } else {
+                cardColumn.style.display = 'none';
+            }
+        }
+    }
+	
+	 // Filter initial anwenden
+    filterCards();
 </script>
 
 {% endblock %}

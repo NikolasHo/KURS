@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from .models import Ingredient
 from .forms import IngredientForm
+from taggit.models import Tag
+
 
 # Create your views here.
 ###urls
@@ -19,25 +21,26 @@ def rezepte(request):
     return render(request, 'pages/rezepte.html', {'rezepte': rezepte})
 
 
-
-###helpers
 def ingredients_list(request):
     ingredients = Ingredient.objects.all()
-    return render(request, 'pages/ingredients_list.html', {'ingredients': ingredients})
+    used_tags = Tag.objects.all()
+    
+    return render(request, 'pages/ingredients_list.html', {'ingredients': ingredients, 'used_tags': used_tags})
 
 def add_ingredients(request):
     if request.method == 'POST':
         form = IngredientForm(request.POST, request.FILES)
-        logger = logging.getLogger(__name__)
-        logger.info(f"{form.errors}")
-        
-        
+
         if form.is_valid():
-            form.save()
+            instance = form.save(commit=False)
+            instance.save()
+            form.save_m2m()
             return redirect('ingredients_list')
     else:
         form = IngredientForm()
-    return render(request, 'pages/add_ingredients.html', {'form': form})
+        used_tags = Tag.objects.all()
+
+    return render(request, 'pages/add_ingredients.html', {'form': form, 'used_tags': used_tags})
 
 def update_quantity(request, ingredient_id):
     logger = logging.getLogger(__name__)
@@ -64,5 +67,3 @@ def update_quantity(request, ingredient_id):
         return JsonResponse({'success': True, 'new_quantity': new_quantity})
     logger.error("Fehler beim Aktualisieren der Anzahl.")
     return JsonResponse({'success': False})
-
-

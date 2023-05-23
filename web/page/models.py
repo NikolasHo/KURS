@@ -1,6 +1,7 @@
 import os
 from uuid import uuid4
 from django.db import models
+from taggit.managers import TaggableManager
 
     
 ### Helpers
@@ -26,7 +27,7 @@ class Ingredient(models.Model):
     description = models.TextField()
     mhd = models.DateField()
     quantity = models.PositiveIntegerField()
-    tag = models.CharField(max_length=255)
+    tags = TaggableManager()
     
     
     
