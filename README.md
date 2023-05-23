@@ -5,7 +5,8 @@
 2. Clone project into a folder
 3. Install requirements by "pip install -r requirements.txt"
 4. Navigate into the folder "web"
-5. Run server by "python manage.py runserver"
+5. Migrate: python manage.py migrate
+6. Run server by "python manage.py runserver"
 
 
 # HTTPS Setup
