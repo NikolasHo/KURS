@@ -1,7 +1,9 @@
 venv/
-web/logs/
+web/logs
 web/media/
 web/cert.pem
 web/key.pem
 web/db.sqlite3
+classification/trainsets
+classification/manuelltest
 **/__pycache__/*
