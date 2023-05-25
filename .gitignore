@@ -4,6 +4,6 @@ web/media/
 web/cert.pem
 web/key.pem
 web/db.sqlite3
-classification/trainsets
-classification/manuelltest
+web/classification/trainsets
+web/classification/manuelltest
 **/__pycache__/*
