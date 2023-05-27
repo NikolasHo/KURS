@@ -1,0 +1,16 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Klassifizierungen</title>
+</head>
+<body>
+    <h1>Verfügbare Klassifizierungen</h1>
+    <ul>
+    {% for class in AvailableClassNames %}
+        <li>{{ class }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

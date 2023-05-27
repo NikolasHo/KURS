@@ -2,6 +2,10 @@
 import json
 import logging
 import os
+import classification.classification_settings as classification_settings
+import classification.classify as classify
+import io 
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
@@ -27,6 +31,8 @@ def ingredients_list(request):
     
     return render(request, 'pages/ingredients_list.html', {'ingredients': ingredients, 'used_tags': used_tags})
 
+
+# Form to add a new ingredient
 def add_ingredients(request):
     if request.method == 'POST':
         form = IngredientForm(request.POST, request.FILES)
@@ -41,6 +47,8 @@ def add_ingredients(request):
         used_tags = Tag.objects.all()
 
     return render(request, 'pages/add_ingredients.html', {'form': form, 'used_tags': used_tags})
+
+# Update quantity of ingredients (increase and decrease)
 
 def update_quantity(request, ingredient_id):
     logger = logging.getLogger(__name__)
@@ -66,4 +74,34 @@ def update_quantity(request, ingredient_id):
         ingredient.save()
         return JsonResponse({'success': True, 'new_quantity': new_quantity})
     logger.error("Fehler beim Aktualisieren der Anzahl.")
+    return JsonResponse({'success': False})
+
+
+# Entry point for classification
+    # all stuff with the neuronal network and its traingings files
+def classification_base(request):
+    with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+        AvailableClassNames = json.load(f)
+    
+    
+    return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames})
+
+
+# Classification of a new image
+def image_classification(request):
+    logger = logging.getLogger(__name__)
+    logger.info(f"classify image")
+    
+    if request.method == 'POST' and request.FILES['image']:
+        image = request.FILES['image']
+        logger.info(f"image request")
+
+        image_data = image.read()
+        image_bytes_io = io.BytesIO(image_data)
+        
+        image_class = classify.classify_image(image_bytes_io)
+        logger.info("Image class:")
+        logger.info(image_class)
+        if image_class:
+                return JsonResponse({'success': True, 'image_class': image_class})
     return JsonResponse({'success': False})

@@ -148,3 +148,4 @@ LOGGING = {
         'level': 'INFO',  # Mindest-Log-Level für die Ausgabe
     },
 }
+
