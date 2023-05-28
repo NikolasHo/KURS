@@ -12,13 +12,6 @@ import matplotlib.pyplot as plt
 ## Main
 
 batch_size = 32
-img_height = 512
-img_width = 512
-
-# Definieren Sie die Größe der Bereiche und die Überlappung
-area_size = 100  # Größe der Bereiche (z.B. 100x100 Pixel)
-overlap = 20  # Überlappung zwischen den Bereichen (z.B. 20 Pixel
-
 
 def open_file():
     Tk().withdraw()  # Versteckt das Hauptfenster des Tkinter-Fensters
@@ -29,6 +22,10 @@ def open_file():
             return filename
 
 def classify_image(image):
+    img_height = 256
+    img_width = 256
+
+    
     img = tf.keras.utils.load_img(
         image, target_size=(img_height, img_width)
     )
@@ -121,14 +118,18 @@ def classify_image_4(image):
         plt.imshow(part[0].astype(int))
         plt.axis('off')
         
+    final_results = []    
     # Ergebnisse ausgeben
     if len(filtered_results) > 0:
         for result in filtered_results:
-            print("Objekt: {}, Vertrauen: {:.2f}%".format(result['class_name'], result['confidence']))
+            if result['confidence'] > 60:
+                
+                final_results.append(result)
+                print("Objekt: {}, Vertrauen: {:.2f}%".format(result['class_name'], result['confidence']))
     else:
         print("Nix gefunden")
 
-    return filtered_results  
+    return final_results  
 
 def classify_image_8(image):
     
@@ -157,7 +158,7 @@ def classify_image_8(image):
 
     # Objekterkennung für jedes Teil durchführen
     results = []
-    for idx, part in enumerate(parts):
+    for part in enumerate(parts):
         part_results = predict_objects(part, model, loaded_class_names)
         results.extend(part_results)
 
@@ -165,13 +166,6 @@ def classify_image_8(image):
     # Ergebnisse filtern
     filtered_results = [result for result in results if result['class_name'] in loaded_class_names]
 
-
-
-   # for idx, part in enumerate(parts):
-        # Teilbild plotten
-    #    plt.subplot(2, 2, idx+1)
-    #    plt.imshow(part[0].astype(int))
-    #    plt.axis('off')
         
     # Ergebnisse ausgeben
     if len(filtered_results) > 0:
@@ -183,9 +177,9 @@ def classify_image_8(image):
     return filtered_results  
 
 
-# Main
+#### Main
 
-testfile = open_file()
-print(testfile)
+#testfile = open_file()
+#print(testfile)
 
-classify_image_8(testfile)
+#classify_image(testfile)
