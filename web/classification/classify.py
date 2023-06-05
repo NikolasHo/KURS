@@ -6,7 +6,7 @@ import tensorflow as tf
 import os
 import numpy as np
 import json
-import classification_settings
+import classification.classification_settings as classification_settings
 import matplotlib.pyplot as plt
 
 ## Main
@@ -88,7 +88,7 @@ def classify_image_4(image):
         loaded_class_names = json.load(f)
 
     # Das Bild in 4 Teile aufteilen
-    image = preprocess_image(testfile, target_size=(img_height_var, img_width_var))
+    image = preprocess_image(image, target_size=(img_height_var, img_width_var))
     part_height = img_height_var // 2
     part_width = img_width_var // 2
 
