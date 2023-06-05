@@ -1,0 +1,17 @@
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  {{ formset.management_form }}
+  
+  {% for form in formset %}
+    <div>
+      {{ form.img.label_tag }} {{ form.img }}
+      {{ form.description.label_tag }} {{ form.description }}
+      {{ form.mhd.label_tag }} {{ form.mhd }}
+      {{ form.quantity.label_tag }} {{ form.quantity }}
+      {{ form.tags.label_tag }} {{ form.tags }}
+    </div>
+  {% endfor %}
+  
+  <input type="submit" value="Speichern">
+</form>
