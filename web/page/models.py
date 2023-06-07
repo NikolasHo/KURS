@@ -28,6 +28,7 @@ class Ingredient(models.Model):
     mhd = models.DateField()
     quantity = models.PositiveIntegerField()
     tags = TaggableManager()
+    weight = models.PositiveIntegerField()
     
     
     

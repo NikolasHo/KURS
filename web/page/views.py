@@ -12,7 +12,6 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from .models import Ingredient
 from .forms import IngredientForm
-from .forms import IngredientFormSet
 from taggit.models import Tag
 
 
@@ -51,17 +50,17 @@ def add_ingredients(request):
 
 
 # Form to add a new ingredient
-def add_multi_ingredients(request):
-    if request.method == 'POST':
-            formset = IngredientFormSet(request.POST)
-            if formset.is_valid():
-                formset.save()  # Die Models werden in die Datenbank geschrieben
-                return redirect('ingredients_list')  # Weiterleitung zur Liste der Personen
-    else:
-        formset = IngredientFormSet()
-        used_tags = Tag.objects.all()
-
-    return render(request, 'pages/add_multi_ingredients.html', {'formset': formset, 'used_tags': used_tags})
+#def add_multi_ingredients(request):
+#    if request.method == 'POST':
+#            formset = IngredientFormSet(request.POST)
+#            if formset.is_valid():
+#                formset.save()  # Die Models werden in die Datenbank geschrieben
+#                return redirect('ingredients_list')  # Weiterleitung zur Liste der Personen
+#    else:
+#        formset = IngredientFormSet()
+#        used_tags = Tag.objects.all()#
+#
+#    return render(request, 'pages/add_multi_ingredients.html', {'formset': formset, 'used_tags': used_tags})
 
 
 # Update quantity of ingredients (increase and decrease)
