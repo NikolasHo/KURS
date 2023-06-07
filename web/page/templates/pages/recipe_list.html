@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rezeptliste</title>
+  <style>
+    .recipe-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .recipe-card img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .recipe-card h2 {
+      margin-bottom: 10px;
+    }
+
+    .recipe-card p {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rezeptliste</h1>
+  
+  {% for recipe in recipes %}
+    <div class="recipe-card">
+      <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}">
+      <h2>{{ recipe.headline }}</h2>
+      <p>{{ recipe.description }}</p>
+    </div>
+  {% endfor %}
+</body>
+</html>

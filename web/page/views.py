@@ -10,9 +10,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
-from .models import Ingredient
+from .models import Ingredient, recipe
 from .forms import IngredientForm
 from taggit.models import Tag
+from .forms import RecipeForm
+
 
 
 # Create your views here.
@@ -120,3 +122,24 @@ def image_classification(request):
         if image_class:
                 return JsonResponse({'success': True, 'image_class': image_class})
     return JsonResponse({'success': False})
+
+
+
+def recipe_list(request):
+    recipes = recipe.objects.all()
+    return render(request, 'pages/recipe_list.html', {'recipes': recipes})
+
+
+def add_recipe(request):
+    if request.method == 'POST':
+        form = RecipeForm(request.POST, request.FILES)
+        
+
+        if form.is_valid():
+ 
+            form.save()
+            # Weiterleiten zur Rezeptdetailseite oder einer anderen Seite
+            return redirect('recipe_list')
+    else:
+        form = RecipeForm()
+    return render(request, 'pages/add_recipe.html', {'form': form})

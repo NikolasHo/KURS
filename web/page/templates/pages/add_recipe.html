@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rezept erstellen</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // Funktion zum Hinzufügen eines neuen Schritts
+    function addStep() {
+      var newStep = `
+        <div class="step">
+          <label for="step-description">Schritt:</label>
+          <textarea name="steps" class="step-description"></textarea>
+          <label for="steps-image">Bild:</label>
+          <input type="file" name="step_img" id="steps-image" accept="image/*" required>
+          <button type="button" onclick="removeStep(this)">Schritt entfernen</button>
+        </div>
+      `;
+      $('#steps-container').append(newStep);
+    }
+
+    // Funktion zum Entfernen eines Schritts
+    function removeStep(button) {
+      $(button).parent().remove();
+    }
+  </script>
+</head>
+<body>
+  <h1>Rezept erstellen</h1>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <label for="recipe-name">Rezeptname:</label>
+    <input type="text" name="recipe_name" id="recipe-name" required>
+    
+    <label for="recipe-description">Beschreibung:</label>
+    <textarea name="recipe_description" id="recipe-description" required></textarea>
+    
+    <label for="recipe-image">Bild:</label>
+    <input type="file" name="recipe_image" id="recipe-image" accept="image/*" required>
+    
+    <h2>Schritte:</h2>
+    <div id="steps-container">
+      <div class="step">
+        <label for="step-description">Schritt:</label>
+        <textarea name="steps" class="step-description"></textarea>
+
+        <label for="steps-image">Bild:</label>
+        <input type="file" name="step_img" id="steps-image" accept="image/*" required>
+      </div>
+    </div>
+    <button type="button" onclick="addStep()">Schritt hinzufügen</button>
+    
+    <button type="submit">Rezept speichern</button>
+  </form>
+</body>
+</html>

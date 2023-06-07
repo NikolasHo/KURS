@@ -29,6 +29,18 @@ class Ingredient(models.Model):
     quantity = models.PositiveIntegerField()
     tags = TaggableManager()
     weight = models.PositiveIntegerField()
+    pass
     
     
+class recipe_step(models.Model):
+    recipe_step_img = models.ImageField(upload_to=upload_image)
+    recipe_step_description = models.TextField()
+    #recipe_step_ingredients = models.ManyToManyField(Ingredient)
+    pass
     
+class recipe(models.Model):
+    img = models.ImageField(upload_to=upload_image)
+    headline = models.TextField()
+    description = models.TextField()
+    recipe_steps = models.ManyToManyField(recipe_step)
+    #ingredients = models.ManyToManyField(Ingredient)
