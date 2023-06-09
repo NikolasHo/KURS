@@ -3,16 +3,17 @@
 
 {% block content %}
 <style>
+    /* Stile für die Karten */
     .card-img-top {
         height: 400px; /* Gib hier die gewünschte Höhe für die Bilder an */
         object-fit: cover;
     }
-	
-	.card-highlight {
+
+    .card-highlight {
         animation: cardHighlight 0.3s;
         animation-fill-mode: forwards;
     }
-    
+
     @keyframes cardHighlight {
         0% {
             outline: 2px solid blue;
@@ -22,20 +23,171 @@
             outline: none;
         }
     }
-	
-	 .add-button {
+
+    .add-button {
         height: 400px;
     }
     
-     .add-button i {
+    .add-button i {
         font-size: 8rem;
         font-weight: bold;
     }
-	
-	.row-gap {
-    margin: 10px;
-	}
 
+    .row-gap {
+        margin: 10px;
+    }
+    
+    .row .card-column {
+        flex-basis: calc(50% - 10px);
+        margin: 5px;
+    }
+
+    .custom-card {
+        width: 50%;
+        max-width: 500px; /* Optional: Begrenze die maximale Breite der Card */
+        background-color: #fafafa;
+        border: 1px solid #e6e6e6;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Stile für Überschrift und Dropdown-Menü */
+    h1 {
+        text-align: center;
+        color: #3897f0;
+      }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    select {
+        padding: 5px 10px;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: 1px solid #e6e6e6;
+        color: #262626;
+    }
+
+    /* Stile für die Karten-Elemente */
+    .card {
+        background-color: #ffffff;
+        border: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s;
+        cursor: pointer;
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background-color: #fafafa;
+        border-bottom: 1px solid #e6e6e6;
+        padding: 10px 20px;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        color: #262626;
+        margin-bottom: 0;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-text {
+        font-size: 1rem;
+        color: #737373;
+        margin-bottom: 10px;
+    }
+
+    .btn-group-toggle {
+        margin-top: 10px;
+    }
+
+    .btn-group-toggle .btn {
+        font-size: 1.2rem;
+        padding: 8px 15px;
+        border-radius: 30px;
+    }
+
+    .btn-group-toggle .btn-success {
+        background-color: #3897f0;
+        border: none;
+        box-shadow: none;
+    }
+
+    .btn-group-toggle .btn-success:hover {
+        background-color: #3396ed;
+    }
+
+    .btn-group-toggle .btn-success:focus {
+        background-color: #3396ed;
+        box-shadow: none;
+    }
+
+    /* Stile für den Button zum Hinzufügen einer neuen Zutat */
+    .add-button {
+        background-color: #3897f0;
+        border: none;
+        box-shadow: none;
+        transition: background-color 0.3s;
+    }
+
+    .add-button:hover {
+        background-color: #3396ed;
+    }
+
+    .add-button:focus {
+        background-color: #3396ed;
+        box-shadow: none;
+    }
+
+    /* Stile für das Dropdown-Menü */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-item {
+        padding: 10px 20px;
+        font-size: 1rem;
+        color: #262626;
+        transition: background-color 0.3s;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f2f2f2;
+    }
+
+    .dropdown-item:focus {
+        background-color: #f2f2f2;
+        outline: none;
+    }
+
+    
+    .custom-card {
+        width: 50%;
+        max-width: 500px; /* Optional: Begrenze die maximale Breite der Card */
+    }
+    
+    .card-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
 
 <h1 class="d-inline-block">Zutatenliste</h1>
@@ -53,50 +205,49 @@
 
 <div class="row">
     {% for ingredient in ingredients %}
-	    {% if forloop.counter|divisibleby:4 %}
-            </div>
-			<p></p>
-			<div class="row">
-        {% endif %}
-        <div class="col-md-4 card-column" data-tags="{{ ingredient.tags.all|join:',' }}">
-            <div class="card" id="card-{{ ingredient.id }}" onclick="highlightCard(this)">
-                <div class="card-header">
-                    <h5 class="card-title">{{ ingredient.description }}</h5>
+        {% if not ingredient.part_of_recipe %}
+            {% if forloop.counter0|divisibleby:2 %}
                 </div>
-                <img src="{{ ingredient.img.url }}" class="card-img-top" alt="{{ ingredient.description }}"
-                    onclick="reduceQuantity('{{ ingredient.id }}')">
-                <div class="card-body">
-                    <p class="card-text">Mindesthaltbarkeitsdatum: {{ ingredient.mhd }}</p>
-                    <p class="card-text">Anzahl: <span id="quantity-{{ ingredient.id }}">{{ ingredient.quantity }}</span></p>
-                    <p class="card-text">Rubrik: {% for tmp_tag in ingredient.tags.all %}{{ tmp_tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-                    <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
-                        <button class="btn btn-success increase-quantity" data-id="{{ ingredient.id }}"
-                            onclick="increaseQuantity('{{ ingredient.id }}')">+</button>
+                <p></p>
+                <div class="row">
+            {% endif %}
+            <div class="col-md-6 card-column" data-tags="{{ ingredient.tags.all|join:',' }}">
+                <div class="card" id="card-{{ ingredient.id }}" onclick="highlightCard(this)">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ ingredient.description }}</h5>
+                    </div>
+                    <img src="{{ ingredient.img.url }}" class="card-img-top" alt="{{ ingredient.description }}"
+                        onclick="reduceQuantity('{{ ingredient.id }}')">
+                    <div class="card-body">
+                        <p class="card-text">Mindesthaltbarkeitsdatum: {{ ingredient.mhd }}</p>
+                        <p class="card-text">Anzahl: <span id="quantity-{{ ingredient.id }}">{{ ingredient.quantity }}</span></p>
+                        <p class="card-text">Rubrik: {% for tmp_tag in ingredient.tags.all %}{{ tmp_tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                        <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
+                            <button class="btn btn-success increase-quantity" data-id="{{ ingredient.id }}"
+                                onclick="increaseQuantity('{{ ingredient.id }}')">+</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     {% endfor %}
-
-    <div class="col-md-4">
-
-        <div class="card">
-			<div class="card-header">
-                <h5 class="card-title">Neue Zutat hinzufügen</h5>
-            </div>
-           <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 400px;">
+</div>
+<div class="card-container">
+    <div class="card custom-card">
+        <div class="card-header">
+            <h5 class="card-title">Neue Zutat hinzufügen</h5>
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 400px;">
             <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
                 <i class="fas fa-plus">+</i>
             </button>
         </div>
-        </div>
     </div>
-
 </div>
 
 
 <script>
-      function highlightCard(card) {
+    function highlightCard(card) {
         card.classList.add('card-highlight');
         setTimeout(function() {
             card.classList.remove('card-highlight');
@@ -117,7 +268,7 @@
             if (quantity === 0) {
                 // Wenn die Anzahl 0 erreicht ist, entferne die Zutat aus der Liste
                 updateQuantityOnServer(ingredientId, quantity);
-                
+
                 var card = document.getElementById('card-' + ingredientId);
                 card.parentNode.removeChild(card);
             }
@@ -186,12 +337,12 @@
         }
         return cookieValue;
     }
-	
-	 function navigateToAddPage() {
+
+    function navigateToAddPage() {
         window.location.href = 'add/';
     }
-	
-	function filterCards() {
+
+    function filterCards() {
         var selectElement = document.getElementById('tag-select');
         var selectedTagId = selectElement.value;
         var cardColumns = document.getElementsByClassName('card-column');
@@ -199,19 +350,20 @@
         for (var i = 0; i < cardColumns.length; i++) {
             var cardColumn = cardColumns[i];
             var tags = cardColumn.getAttribute('data-tags').split(',');
-			console.log("datatags:" + tags);
-			console.log("selected tag:" + selectedTagId);
+
             if (selectedTagId === '' || tags.includes(selectedTagId)) {
-				console.log("found");
                 cardColumn.style.display = 'block';
             } else {
                 cardColumn.style.display = 'none';
             }
         }
     }
-	
-	 // Filter initial anwenden
+
+    // Filter initial anwenden
     filterCards();
 </script>
 
 {% endblock %}
+
+
+

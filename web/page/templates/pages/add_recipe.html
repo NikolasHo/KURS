@@ -2,8 +2,123 @@
 <html>
 <head>
   <title>Rezept erstellen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #3897f0;
+    }
+    
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    
+    input[type="text"],
+    textarea,
+    input[type="file"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    
+    textarea {
+      height: 100px;
+    }
+    
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #3897f0;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background-color: #357ae8;
+    }
+    
+    .ingredient_list,
+    .step {
+      margin-bottom: 10px;
+    }
+  </style>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
   <script>
+    $(document).ready(function() {
+      var availableIngredients;
+
+      // AJAX-Anfrage, um verfügbare Zutaten abzurufen
+      $.ajax({
+        url: '/getIngredients/', // Stellen Sie sicher, dass die URL korrekt ist
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+          // Daten erfolgreich abgerufen
+          availableIngredients = response.ingredients;
+          // Konfigurieren Sie die Autovervollständigung für die "ingredient-description" TextArea
+          $('#ingredient-description').autocomplete({
+            source: availableIngredients,
+            select: function(event, ui) {
+              // Wenn eine Zutat ausgewählt wird, setzen Sie den Namen in die TextArea
+              $('#ingredient-description').val(ui.item.value);
+              return false;
+            }
+          });
+
+          // Zuletzt verwendete Ingredients (Beispielwerte)
+          var recentIngredients = availableIngredients;
+          console.log(recentIngredients)
+          // Elemente für die zuletzt verwendeten Ingredients erstellen und anzeigen
+          var recentIngredientsList = $('#recent-ingredients');
+          for (var i = 0; i < recentIngredients.length; i++) {
+            var ingredient = recentIngredients[i];
+            var listItem = $('<li>').text(ingredient);
+            listItem.on('click', function() {
+              var ingredientText = $(this).text();
+              $('#ingredient-description').val(ingredientText);
+            });
+            recentIngredientsList.append(listItem);
+          }
+
+        },
+        error: function(xhr, status, error) {
+          // Fehler beim Abrufen der Daten
+          console.log('Fehler beim Abrufen der Zutaten:', error);
+        }
+      });
+
+      
+    });
+
     // Funktion zum Hinzufügen eines neuen Schritts
     function addStep() {
       var newStep = `
@@ -16,6 +131,22 @@
         </div>
       `;
       $('#steps-container').append(newStep);
+    }
+
+    function addIngredient() {
+      var newIngredient = `
+        <div class="ingredient_list">
+          <label for="ingredient-description">Zutat</label>
+          <textarea type="text" name="ingredient_description" id="ingredient-description" rows="5"></textarea>
+
+          <label for="ingredient-quantity">Anzahl</label>
+          <input type="number" name="ingredient_quantity" id="ingredient-quantity"  min="1" max="100" value="1">
+
+          <label for="ingredient-weight">Gewicht</label>
+          <input type="number" name="ingredient_weight" id="ingredient-weight"  min="0" max="10000" value="0">
+        </div>
+      `;
+      $('#ingredient-container').append(newIngredient);
     }
 
     // Funktion zum Entfernen eines Schritts
@@ -38,6 +169,26 @@
     <label for="recipe-image">Bild:</label>
     <input type="file" name="recipe_image" id="recipe-image" accept="image/*" required>
     
+    <h2>Zutaten:</h2>
+    <div id="ingredient-container">
+      <div class="ingredient_list">
+        <label for="ingredient-description">Zutat</label>
+        <textarea type="text" name="ingredient_description" id="ingredient-description" rows="5"></textarea>
+
+        <label for="ingredient-quantity">Anzahl</label>
+        <input type="number" name="ingredient_quantity" id="ingredient-quantity"  min="1" max="100" value="1">
+
+        <label for="ingredient-weight">Gewicht</label>
+        <input type="number" name="ingredient_weight" id="ingredient-weight"  min="0" max="10000" value="0">
+      </div>
+    </div>
+    <button type="button" onclick="addIngredient()">Zutat hinzufügen</button>
+
+    <h2>Zuletzt verwendete Zutaten:</h2>
+    <ul id="recent-ingredients">
+      <!-- Hier werden die zuletzt verwendeten Ingredients eingefügt -->
+    </ul>
+
     <h2>Schritte:</h2>
     <div id="steps-container">
       <div class="step">

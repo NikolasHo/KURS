@@ -22,10 +22,6 @@ from .forms import RecipeForm
 def base(request):
     return render(request, 'base.html', {})
 
-def rezepte(request):
-    rezepte = ['Rezept 1', 'Rezept 2', 'Rezept 3']  # Dummy-Daten für Rezepte
-    return render(request, 'pages/rezepte.html', {'rezepte': rezepte})
-
 
 def ingredients_list(request):
     ingredients = Ingredient.objects.all()
@@ -41,6 +37,7 @@ def add_ingredients(request):
 
         if form.is_valid():
             instance = form.save(commit=False)
+            instance.part_of_recipe = False
             instance.save()
             form.save_m2m()
             return redirect('ingredients_list')
@@ -50,23 +47,7 @@ def add_ingredients(request):
 
     return render(request, 'pages/add_ingredients.html', {'form': form, 'used_tags': used_tags})
 
-
-# Form to add a new ingredient
-#def add_multi_ingredients(request):
-#    if request.method == 'POST':
-#            formset = IngredientFormSet(request.POST)
-#            if formset.is_valid():
-#                formset.save()  # Die Models werden in die Datenbank geschrieben
-#                return redirect('ingredients_list')  # Weiterleitung zur Liste der Personen
-#    else:
-#        formset = IngredientFormSet()
-#        used_tags = Tag.objects.all()#
-#
-#    return render(request, 'pages/add_multi_ingredients.html', {'formset': formset, 'used_tags': used_tags})
-
-
 # Update quantity of ingredients (increase and decrease)
-
 def update_quantity(request, ingredient_id):
     logger = logging.getLogger(__name__)
     logger.info(f"Change quantity")
@@ -129,17 +110,34 @@ def recipe_list(request):
     recipes = recipe.objects.all()
     return render(request, 'pages/recipe_list.html', {'recipes': recipes})
 
+def get_ingredients(request):
+     # Zutaten aus der Datenbank abrufen, bei denen part_of_recipe=False ist
+    ingredients = Ingredient.objects.filter(part_of_recipe=False).values_list('description', flat=True)
+    
+    # JSON-Antwort erstellen
+    data = {
+        'ingredients': list(ingredients)
+    }
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"--- get_ingredients")
+    logger.info(data)
+    return JsonResponse(data)
+
 
 def add_recipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
-        
-
+        logger = logging.getLogger(__name__)
+        logger.info(f"--- add_recipe")
+        logger.info(form)
         if form.is_valid():
- 
+
+
             form.save()
             # Weiterleiten zur Rezeptdetailseite oder einer anderen Seite
             return redirect('recipe_list')
     else:
         form = RecipeForm()
     return render(request, 'pages/add_recipe.html', {'form': form})
+
