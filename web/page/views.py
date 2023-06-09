@@ -15,7 +15,7 @@ from .forms import IngredientForm
 from taggit.models import Tag
 from .forms import RecipeForm
 
-
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 ###urls
@@ -49,7 +49,6 @@ def add_ingredients(request):
 
 # Update quantity of ingredients (increase and decrease)
 def update_quantity(request, ingredient_id):
-    logger = logging.getLogger(__name__)
     logger.info(f"Change quantity")
     ingredient = get_object_or_404(Ingredient, id=ingredient_id)
     if request.method == 'POST':
@@ -87,7 +86,6 @@ def classification_base(request):
 
 # Classification of a new image
 def image_classification(request):
-    logger = logging.getLogger(__name__)
     logger.info(f"classify image")
     
     if request.method == 'POST' and request.FILES['image']:
@@ -119,7 +117,6 @@ def get_ingredients(request):
         'ingredients': list(ingredients)
     }
     
-    logger = logging.getLogger(__name__)
     logger.info(f"--- get_ingredients")
     logger.info(data)
     return JsonResponse(data)
@@ -128,11 +125,11 @@ def get_ingredients(request):
 def add_recipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
-        logger = logging.getLogger(__name__)
-        logger.info(f"--- add_recipe")
-        logger.info(form)
-        if form.is_valid():
 
+        logger.info(f"--- add_recipe")
+        
+       
+        if form.is_valid():
 
             form.save()
             # Weiterleiten zur Rezeptdetailseite oder einer anderen Seite

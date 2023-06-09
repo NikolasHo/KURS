@@ -204,9 +204,10 @@
 </div>
 
 <div class="row">
+
     {% for ingredient in ingredients %}
         {% if not ingredient.part_of_recipe %}
-            {% if forloop.counter0|divisibleby:2 %}
+            {% if forloop.counter|divisibleby:2 %}
                 </div>
                 <p></p>
                 <div class="row">

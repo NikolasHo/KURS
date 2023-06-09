@@ -1,6 +1,8 @@
 from django import forms
 from .models import Ingredient, recipe_step, recipe
+import logging
 
+logger = logging.getLogger(__name__)
 
 class IngredientForm(forms.ModelForm):
     class Meta:
@@ -24,19 +26,18 @@ class RecipeForm(forms.Form):
     step_img = forms.ImageField(label='Bild für jeden Schritt')
 
     def save(self):
-        # Speichern Sie das Rezept und die Schritte hier entsprechend Ihrer Logik
+        # Speichern Sie das Rezept hier entsprechend Ihrer Logik
         recipe_data = recipe.objects.create(
             headline=self.cleaned_data['recipe_name'],
             description=self.cleaned_data['recipe_description'],
             img=self.cleaned_data['recipe_image']
         )
-    
-       
-        ingredient_descriptions = self.cleaned_data['ingredient_description'].split('\n')
-        ingredient_quantitys = self.cleaned_data['ingredient_quantity'].split('\n')
-        ingredient_weights = self.cleaned_data['ingredient_weight'].split('\n')
-       
-        for description, quantity, weight in zip(ingredient_descriptions,ingredient_quantitys,ingredient_weights):
+
+        ingredient_descriptions = self.data.getlist('ingredient_description')
+        ingredient_quantitys = self.data.getlist('ingredient_quantity')
+        ingredient_weights = self.data.getlist('ingredient_weight')
+
+        for description, quantity, weight in zip(ingredient_descriptions, ingredient_quantitys, ingredient_weights):
             ingredient_tmp = Ingredient.objects.create(
                 description=description,
                 quantity=quantity,
@@ -44,10 +45,9 @@ class RecipeForm(forms.Form):
                 part_of_recipe=True
             )
             recipe_data.ingredients.add(ingredient_tmp)
-    
-        
-        steps_data = self.cleaned_data['steps'].split('\n')
-        step_images = self.files.getlist('step_img')  # Zugriff auf die Bilder für jeden Schritt
+
+        steps_data = self.data.getlist('steps')
+        step_images = self.files.getlist('step_img')
         for step_description, step_image in zip(steps_data, step_images):
             step = recipe_step.objects.create(
                 recipe_step_description=step_description,
@@ -56,3 +56,4 @@ class RecipeForm(forms.Form):
             recipe_data.recipe_steps.add(step)
 
         return recipe_data
+
