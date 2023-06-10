@@ -91,13 +91,18 @@
       margin-right: 5px;
     }
   </style>
+  <script>
+    function navigateToRecipe(recipeId) {
+      window.location.href = '/recipe/' + recipeId + '/';
+    }
+  </script>
 </head>
 <body>
   <h1>Rezeptliste</h1>
   
   <div class="container">
     {% for recipe in recipes %}
-      <div class="recipe-card">
+      <div class="recipe-card" onclick="navigateToRecipe({{ recipe.id }})">
         <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}">
         <div class="card-content">
           <h2>{{ recipe.headline }}</h2>

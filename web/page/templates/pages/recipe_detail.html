@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rezeptdetail</title>
+  <style>
+    /* CSS-Stile hier einfügen */
+  </style>
+</head>
+<body>
+  <h1>{{ recipe.headline }}</h1>
+  <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}">
+
+  <p>{{ recipe.description }}</p>
+
+  <h2>Zutaten:</h2>
+  <ul>
+    {% for ingredient in recipe.ingredients.all %}
+      <li>{{ ingredient.description }}</li>
+    {% endfor %}
+  </ul>
+
+  <h2>Zubereitung:</h2>
+  {% for step in recipe.recipe_steps.all %}
+    <div>
+      <img src="{{ step.recipe_step_img.url }}" alt="Schritt {{ forloop.counter }}">
+      <p>{{ step.recipe_step_description }}</p>
+    </div>
+  {% endfor %}
+</body>
+</html>

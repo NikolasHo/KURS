@@ -138,3 +138,8 @@ def add_recipe(request):
         form = RecipeForm()
     return render(request, 'pages/add_recipe.html', {'form': form})
 
+
+
+def recipe_detail(request, recipe_id):
+    recipe_obj = get_object_or_404(recipe, id=recipe_id)
+    return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj})
