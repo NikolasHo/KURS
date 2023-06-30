@@ -129,6 +129,7 @@
     function navigateToAddPage() {
       window.location.href = '/recipe/add';
     }
+
   </script>
 </head>
 <body>
@@ -154,6 +155,15 @@
           <div class="comments">
             <i class="fa fa-comment"></i> 567
           </div>
+          <form id="delete-form" action="{% url 'delete_recipe' recipe.id %}" method="POST">
+            {% csrf_token %}
+            <div class="delete-button">
+              <button type="submit">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </form>
+        </div>
         </div>
       </div>
     {% endfor %}
@@ -162,7 +172,7 @@
   <div class="container">
       <div class="recipe-card">
         <div class="card-content">
-          <h2>Add recipie</h2> 
+          <h2>Rezept hinzufügen</h2> 
         </div>
         <div class="card-content d-flex flex-column justify-content-center align-items-center" style="height: 400px;">
           <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">

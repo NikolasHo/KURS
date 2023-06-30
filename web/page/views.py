@@ -161,11 +161,22 @@ def add_recipe(request):
         if form.is_valid():
 
             form.save()
-            # Weiterleiten zur Rezeptdetailseite oder einer anderen Seite
+            
             return redirect('recipe_list')
     else:
         form = RecipeForm()
     return render(request, 'pages/add_recipe.html', {'form': form})
+
+
+def delete_recipe(request, recipe_id):
+    recipe_obj = get_object_or_404(recipe, id=recipe_id)
+    logger.info("Try to delete recipie")
+    if request.method == 'POST':
+        recipe_obj.delete()
+        logger.info("Recipie deleted")
+        return redirect('recipe_list') 
+    
+    return render(request, 'pages/recipe_list.html', {'recipe': recipe_obj})
 
 
 
