@@ -4,9 +4,11 @@ import logging
 import os
 import classification.classification_settings as classification_settings
 import classification.classify as classify
-import io 
+import classification.classification as classification
+import io
 
-from django.shortcuts import render, redirect, get_object_or_404
+
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -37,9 +39,21 @@ def add_ingredients(request):
 
         if form.is_valid():
             instance = form.save(commit=False)
-            instance.part_of_recipe = False
-            instance.save()
-            form.save_m2m()
+            
+            try:
+                found_ingredient = Ingredient.objects.get(description=instance.description)
+                # if it already exist, dont create a new entry
+                print("Ingredient already exist:")
+                print("Name:", found_ingredient.description)
+                print("Quantity:", found_ingredient.quantity)
+            except Ingredient.DoesNotExist:
+                # Das Ingredient wurde nicht gefunden
+                print("New Ingredient: ", instance.description)
+                instance = form.save(commit=False)
+                instance.part_of_recipe = False
+                instance.save()
+                form.save_m2m()
+            
             return redirect('ingredients_list')
     else:
         form = IngredientForm()
@@ -58,16 +72,19 @@ def update_quantity(request, ingredient_id):
         ingredient.quantity = new_quantity
        
         logger.info(f"Die Anzahl ist {new_quantity}")
-        if new_quantity == 0:
-            if ingredient.img:
-                image_path = os.path.join(settings.MEDIA_ROOT, str(ingredient.img))
-                if default_storage.exists(image_path):
-                    default_storage.delete(image_path)
+        # dont remove the entry, just set it to zero.
+        
+       # if new_quantity == 0:
+            #if ingredient.img:
+               # image_path = os.path.join(settings.MEDIA_ROOT, str(ingredient.img))
+               
+               # if default_storage.exists(image_path):
+               #      default_storage.delete(image_path)
             
-            ingredient.delete()
-            logger.info(f"Die Zutat {ingredient_id} wurde erfolgreich gelöscht.")
-     
-            return JsonResponse({'success': True, 'message': 'Zutat erfolgreich gelöscht.'})
+            #ingredient.delete()
+            #logger.info(f"Die Zutat {ingredient_id} wurde erfolgreich gelöscht.")
+        
+
         ingredient.save()
         return JsonResponse({'success': True, 'new_quantity': new_quantity})
     logger.error("Fehler beim Aktualisieren der Anzahl.")
@@ -79,9 +96,22 @@ def update_quantity(request, ingredient_id):
 def classification_base(request):
     with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
         AvailableClassNames = json.load(f)
+        
+        
+        if request.method == 'POST':
+            success = train_network(request)
+        else:
+            success = None    
+            
+            return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames,'success': success})
+  
+def train_network(request):
+
+    result = classification.train_classification_network()
     
-    
-    return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames})
+    return HttpResponse(result)  # Hier wird eine HttpResponse-Instanz zurückgegeben
+
+
 
 
 # Classification of a new image
@@ -128,7 +158,6 @@ def add_recipe(request):
 
         logger.info(f"--- add_recipe")
         
-       
         if form.is_valid():
 
             form.save()
@@ -143,3 +172,43 @@ def add_recipe(request):
 def recipe_detail(request, recipe_id):
     recipe_obj = get_object_or_404(recipe, id=recipe_id)
     return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj})
+
+
+
+def folder_list(request):
+    trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
+    folders = os.listdir(trainset_path)
+    folder_data = []
+    
+    for folder in folders:
+        folder_path = os.path.join(trainset_path, folder)
+        images = [image for image in os.listdir(folder_path) if image.endswith('.jpeg')]
+        folder_data.append({'foldername': folder, 'images': images})
+    
+    return render(request, 'pages/folder_list.html', {'folder_data': folder_data})
+
+def create_folder(request):
+    if request.method == 'POST':
+        folder_name = request.POST.get('folder_name')
+        trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
+        new_folder_path = os.path.join(trainset_path, folder_name)
+        
+        if not os.path.exists(new_folder_path):
+            os.makedirs(new_folder_path)
+    
+    return redirect('folder_list')
+
+def upload_image(request):
+    if request.method == 'POST':
+        folder_name = request.POST.get('folder_name')
+        image = request.FILES['image']
+        
+        trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
+        folder_path = os.path.join(trainset_path, folder_name)
+        image_path = os.path.join(folder_path, image.name)
+        
+        with open(image_path, 'wb+') as destination:
+            for chunk in image.chunks():
+                destination.write(chunk)
+    
+    return redirect('folder_list')

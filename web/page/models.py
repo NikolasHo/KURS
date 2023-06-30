@@ -16,7 +16,7 @@ def upload_image(instance, filename):
     new_filename = unique_filename + extension
 
     # Gib den Pfad zurück, unter dem die Datei gespeichert werden soll
-    return os.path.join('ingredients/', new_filename)
+    return os.path.join('images/', new_filename)
 
 
 

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Folders and Images</title>
+    {% load static %}
+</head>
+<body>
+    <h1>Folders and Images</h1>
+    <ul>
+        {% for folder in folder_data %}
+            <li>
+                {{ folder.foldername }} ({{ folder.images|length }} images)
+              
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Create New Folder</h2>
+    <form method="POST" action="{% url 'create_folder' %}">
+        {% csrf_token %}
+        <input type="text" name="folder_name" placeholder="Folder Name">
+        <input type="submit" value="Create Folder">
+    </form>
+
+    <h2>Add Image to Folder</h2>
+    <form method="POST" action="{% url 'upload_image' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <select name="folder_name">
+            {% for folder in folder_data %}
+                <option value="{{ folder.foldername }}">{{ folder.foldername }}</option>
+            {% endfor %}
+        </select>
+        <input type="file" name="image">
+        <input type="submit" value="Upload Image">
+    </form>
+</body>
+</html>

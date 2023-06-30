@@ -13,4 +13,8 @@ urlpatterns = [
     path('getIngredients/', views.get_ingredients, name='get_ingredients'),
     path('recipe/<int:recipe_id>/', views.recipe_detail, name='recipe_detail'),
     path('', views.base, name='base'),
+    path('folders/', views.folder_list, name='folder_list'),
+    path('folders/create/', views.create_folder, name='create_folder'),
+    path('images/upload/', views.upload_image, name='upload_image'),
+    path('train_network/', views.train_network, name='train_network'),
 ]

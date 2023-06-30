@@ -188,6 +188,36 @@
         justify-content: center;
         align-items: center;
     }
+
+    /* Neue Stile für Karten mit Quantity = 0 */
+    .card-zero-quantity {
+        opacity: 0.5;
+    }
+
+    /* Neue Stile für die Karten-Elemente */
+    .card {
+        /* ... (bestehender CSS-Stil) ... */
+        transition: box-shadow 0.3s;
+        cursor: pointer;
+        position: relative; /* Hinzugefügt, um das Positionieren der Karten zu ermöglichen */
+    }
+
+    /* Neue Stile für die Karten-Elemente mit Quantity = 0 */
+    .card.card-zero-quantity {
+        z-index: -1; /* Setzt die Karten mit Quantity = 0 unter die anderen Karten */
+    }
+    
+    .card.card-zero-quantity::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.2); /* Hintergrundfarbe für die ausgegraute Karte */
+        z-index: 1; /* Setzt die Hintergrundebene über den Inhalt der Karte */
+    }
+
 </style>
 
 <h1 class="d-inline-block">Zutatenliste</h1>
@@ -212,7 +242,11 @@
                 <p></p>
                 <div class="row">
             {% endif %}
-            <div class="col-md-6 card-column" data-tags="{{ ingredient.tags.all|join:',' }}">
+            {% if ingredient.quantity == 0 %}
+            <div class="col-md-6 card-column card-zero-quantity" data-tags="{{ ingredient.tags.all|join:',' }}">
+            {% else %}
+                <div class="col-md-6 card-column" data-tags="{{ ingredient.tags.all|join:',' }}">
+            {% endif %}
                 <div class="card" id="card-{{ ingredient.id }}" onclick="highlightCard(this)">
                     <div class="card-header">
                         <h5 class="card-title">{{ ingredient.description }}</h5>
@@ -269,9 +303,11 @@
             if (quantity === 0) {
                 // Wenn die Anzahl 0 erreicht ist, entferne die Zutat aus der Liste
                 updateQuantityOnServer(ingredientId, quantity);
+                
+                // Dont remove the card from the list to increase the entry later.
 
-                var card = document.getElementById('card-' + ingredientId);
-                card.parentNode.removeChild(card);
+                // var card = document.getElementById('card-' + ingredientId);
+                // card.parentNode.removeChild(card);
             }
 
             // Sende AJAX-Anfrage an den Server, um die Anzahl zu aktualisieren
@@ -313,6 +349,17 @@
         .then(data => {
             if (data.success) {
                 console.log('Quantity was updated');
+                
+           // TODO: Dass muss noch aktualisiert werden, sodass man nicht immer die Seite refreshen muss.
+                    $.ajax({
+                        url: window.location.href,
+                        method: 'GET',
+                        success: function(data) {
+                          $('body').html(data); // Die Seite mit den aktualisierten Daten ersetzen
+                        }
+                      });
+                
+
             } else {
                 console.log('Error while update quantity');
             }

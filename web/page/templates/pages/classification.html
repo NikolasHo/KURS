@@ -12,5 +12,16 @@
         <li>{{ class }}</li>
     {% endfor %}
     </ul>
+
+    <form method="post" action="{% url 'train_network' %}">
+        {% csrf_token %}
+        <button type="submit">Neuronales Netz trainieren</button>
+    </form>
+
+    {% if success %}
+    <p>Aktion erfolgreich ausgeführt.</p>
+    {% elif success == "Error" %}
+        <p>Es ist ein Fehler aufgetreten.</p>
+    {% endif %}
 </body>
 </html>
