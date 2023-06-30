@@ -1,3 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -90,10 +94,40 @@
     .recipe-card .comments i {
       margin-right: 5px;
     }
+
+    /* Stile für den Button zum Hinzufügen einer neuen Zutat */
+    .add-button {
+        background-color: #3897f0;
+        border: none;
+        box-shadow: none;
+        transition: background-color 0.3s;
+    }
+
+    .add-button:hover {
+        background-color: #3396ed;
+    }
+
+    .add-button:focus {
+        background-color: #3396ed;
+        box-shadow: none;
+    }
+
+    .add-button {
+      height: 400px;
+    }
+    
+    .add-button i {
+        font-size: 8rem;
+        font-weight: bold;
+    }
   </style>
   <script>
     function navigateToRecipe(recipeId) {
       window.location.href = '/recipe/' + recipeId + '/';
+    }
+
+    function navigateToAddPage() {
+      window.location.href = '/recipe/add';
     }
   </script>
 </head>
@@ -124,5 +158,21 @@
       </div>
     {% endfor %}
   </div>
+
+  <div class="container">
+      <div class="recipe-card">
+        <div class="card-content">
+          <h2>Add recipie</h2> 
+        </div>
+        <div class="card-content d-flex flex-column justify-content-center align-items-center" style="height: 400px;">
+          <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
+              <i class="fas fa-plus">+</i>
+          </button>
+      </div>
+      </div>
+  </div>
+
 </body>
 </html>
+
+{% endblock %}
