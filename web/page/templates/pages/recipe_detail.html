@@ -7,29 +7,127 @@
 <head>
   <title>Rezeptdetail</title>
   <style>
-    /* CSS-Stile hier einfügen */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #3897f0;
+      font-size: 24px;
+      margin-top: 20px;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 400px;
+      margin: 10px 0;
+    }
+    
+    p {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    ul {
+      list-style-type: disc;
+      margin-bottom: 10px;
+      padding-left: 20px;
+      font-size: 16px;
+    }
+
+    .cook-button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #3897f0;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .cook-button:hover {
+      background-color: #357ae8;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 9999;
+    }
   </style>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      var popup = document.getElementById('success-popup');
+      var success = '{{ success }}';
+      console.log(success);
+      if (popup) {
+        console.log("Show popup");
+        popup.style.display = 'block';
+        setTimeout(function() {
+          popup.style.display = 'none';
+        }, 3000);  // Das Popup nach 3 Sekunden ausblenden (3000 Millisekunden)
+      }
+    });
+  </script>
 </head>
 <body>
-  <h1>{{ recipe.headline }}</h1>
-  <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}">
+  <div class="container">
+    {% if success == "true" %}
+      <div class="popup" id="success-popup">
+        Die Zutaten wurden erfolgreich gelöscht.
+      </div>
+    {% endif %}
 
-  <p>{{ recipe.description }}</p>
+    <h1>{{ recipe.headline }}</h1>
+    <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}">
 
-  <h2>Zutaten:</h2>
-  <ul>
-    {% for ingredient in recipe.ingredients.all %}
-      <li>{{ ingredient.description }}</li>
+    <p>{{ recipe.description }}</p>
+
+    <h2>Zutaten:</h2>
+    <ul>
+      {% for ingredient in recipe.ingredients.all %}
+        <li>{{ ingredient.description }}</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Zubereitung:</h2>
+    {% for step in recipe.recipe_steps.all %}
+      <div>
+        <img src="{{ step.recipe_step_img.url }}" alt="Schritt {{ forloop.counter }}">
+        <p>{{ step.recipe_step_description }}</p>
+      </div>
     {% endfor %}
-  </ul>
-
-  <h2>Zubereitung:</h2>
-  {% for step in recipe.recipe_steps.all %}
-    <div>
-      <img src="{{ step.recipe_step_img.url }}" alt="Schritt {{ forloop.counter }}">
-      <p>{{ step.recipe_step_description }}</p>
-    </div>
-  {% endfor %}
+    {% if all_ingredients_available == "true" %}
+      <form id="delete-form" action="{% url 'cooked_recipe' recipe.id %}" method="POST">
+        {% csrf_token %}
+        <div class="delete-button">
+          <button type="submit">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </form>
+    {% endif %}
+  </div>
 </body>
 </html>
 {% endblock %}

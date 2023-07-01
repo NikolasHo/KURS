@@ -43,13 +43,16 @@ def classify_image(image):
     with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
         loaded_class_names = json.load(f)
         
-    target_class = loaded_class_names[np.argmax(score)]
-    
-        
     print(
         "This image most likely belongs to {} with a {:.2f} percent confidence."
         .format(loaded_class_names[np.argmax(score)], 100 * np.max(score))
     )
+    
+    if np.argmax(score) > 90:    
+        target_class = loaded_class_names[np.argmax(score)]
+    else:
+        target_class = None
+    
     
     return target_class    
 

@@ -41,7 +41,11 @@ def add_ingredients(request):
             instance = form.save(commit=False)
             
             try:
-                found_ingredient = Ingredient.objects.get(description=instance.description)
+                print("Check: ", instance.description)
+                
+                available_ingredients = Ingredient.objects.filter(part_of_recipe=False)
+
+                found_ingredient = available_ingredients.get(description=instance.description)
                 # if it already exist, dont create a new entry
                 print("Ingredient already exist:")
                 print("Name:", found_ingredient.description)
@@ -142,13 +146,10 @@ def get_ingredients(request):
      # Zutaten aus der Datenbank abrufen, bei denen part_of_recipe=False ist
     ingredients = Ingredient.objects.filter(part_of_recipe=False).values_list('description', flat=True)
     
-    # JSON-Antwort erstellen
     data = {
         'ingredients': list(ingredients)
     }
     
-    logger.info(f"--- get_ingredients")
-    logger.info(data)
     return JsonResponse(data)
 
 
@@ -180,9 +181,57 @@ def delete_recipe(request, recipe_id):
 
 
 
+#def recipe_detail(request, recipe_id):
+#    recipe_obj = get_object_or_404(recipe, id=recipe_id)
+#    return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj})
+
 def recipe_detail(request, recipe_id):
     recipe_obj = get_object_or_404(recipe, id=recipe_id)
-    return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj})
+    
+    # all ingredients in recipe
+    ingredients = recipe_obj.ingredients.all()
+    
+    # all available ingredients
+    available_ingredients = Ingredient.objects.filter(part_of_recipe=False)
+
+    # check if they are enough
+    all_ingredients_available = "true"
+
+    logger.info("Check available ingredients for recipe")
+
+    for ingredient in ingredients:
+        
+        try:
+            logger.info(ingredient.description)
+            
+            if available_ingredients.get(description=ingredient.description) :
+                available_ingredient = available_ingredients.get(description=ingredient.description)
+            else:
+                all_ingredients_available = "false"
+                logger.info(ingredient.description + " is not available")
+                break
+
+
+            # Check if quantity is enough
+            if ingredient.weight == 0 and ingredient.quantity > available_ingredient.quantity:
+                all_ingredients_available = "false"
+                logger.info("Quantity is to low")
+                break
+
+            # check if weight is enough
+            if ingredient.weight > 0 and ingredient.weight > available_ingredient.weight:
+                all_ingredients_available = "false"
+                logger.info("Weight is to low")
+                break
+            
+        except Ingredient.DoesNotExist:
+
+                all_ingredients_available = "false"
+                pass      
+            
+    return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj, 'all_ingredients_available': all_ingredients_available})
+
+
 
 
 
@@ -223,3 +272,47 @@ def upload_image(request):
                 destination.write(chunk)
     
     return redirect('folder_list')
+
+
+def cooked_recipe(request, recipe_id):
+    recipe_obj = get_object_or_404(recipe, id=recipe_id)
+    
+    if request.method == 'POST':
+        
+        ##get all necessary ingredients
+        cooked_ingredients = recipe_obj.ingredients.all()
+        
+        #get all available ingredients
+        available_ingredients = Ingredient.objects.filter(part_of_recipe=False)
+        
+        success = "true"
+        logger.info("Reduce available ingredients")
+        
+        for cooked_ingredient in cooked_ingredients:
+            try:
+                
+                logger.info("Cooked: ", cooked_ingredient.description)
+            
+                if available_ingredients.get(description=cooked_ingredient.description) :
+                    available_ingredient = available_ingredients.get(description=cooked_ingredient.description)
+                else:
+                    success = "false"
+                    logger.info(cooked_ingredient.description + " is not available")
+                    break
+
+                if available_ingredient.weight > 0:
+                    available_ingredient.weight -= cooked_ingredient.weight  
+                    available_ingredient.save()
+                else:
+                    available_ingredient.quantity -=  cooked_ingredient.quantity  
+                    available_ingredient.save()
+        
+            except Ingredient.DoesNotExist:
+                logger.info("Ingredient does not exist: ", Ingredient.description)
+                success = "false"
+                pass
+      
+        
+        return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj,'success': success})
+    
+    return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj})
