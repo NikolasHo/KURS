@@ -280,8 +280,8 @@
     </div>
 </div>
 
-
 <script>
+
     function highlightCard(card) {
         card.classList.add('card-highlight');
         setTimeout(function() {
@@ -350,16 +350,6 @@
             if (data.success) {
                 console.log('Quantity was updated');
                 
-           // TODO: Dass muss noch aktualisiert werden, sodass man nicht immer die Seite refreshen muss.
-                    $.ajax({
-                        url: window.location.href,
-                        method: 'GET',
-                        success: function(data) {
-                          $('body').html(data); // Die Seite mit den aktualisierten Daten ersetzen
-                        }
-                      });
-                
-
             } else {
                 console.log('Error while update quantity');
             }

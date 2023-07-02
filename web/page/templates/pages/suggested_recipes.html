@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipes</title>
+    <style>
+        .card {
+            display: inline-block;
+            width: 45%;
+            height: 300px;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .card img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Recipes</h1>
+    {% for recipe in recipes %}
+        <div class="card">
+            <img src="{{ recipe.image }}" alt="{{ recipe.header }}" onclick="window.location.href='{{ recipe.link }}';">
+            <h3>{{ recipe.header }}</h3>
+        </div>
+        {% if forloop.counter|divisibleby:2 %}
+            <br>
+        {% endif %}
+    {% endfor %}
+</body>
+</html>
+
+
+
+
+
+
+{% endblock %}

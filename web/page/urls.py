@@ -12,6 +12,7 @@ urlpatterns = [
     path('recipe/delete/<int:recipe_id>/', views.delete_recipe, name='delete_recipe'),
     path('recipe/<int:recipe_id>/', views.recipe_detail, name='recipe_detail'),
     path('recipe/cooked/<int:recipe_id>/', views.cooked_recipe, name='cooked_recipe'),
+    path('suggestedrecipes/', views.suggested_recipes, name='suggested_recipes'),
     path('', views.base, name='base'),
     path('folders/', views.folder_list, name='folder_list'),
     path('folders/create/', views.create_folder, name='create_folder'),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('train_network/', views.train_network, name='train_network'),
     path('image_classification/', views.image_classification, name='image_classification'),
     path('classification', views.classification_base, name='classification'),
+   
 ]
