@@ -16,6 +16,7 @@ urlpatterns = [
     path('', views.base, name='base'),
     path('folders/', views.folder_list, name='folder_list'),
     path('folders/create/', views.create_folder, name='create_folder'),
+    path('folders/delete/', views.delete_folder, name='delete_folder'),
     path('images/upload/', views.upload_image, name='upload_image'),
     path('train_network/', views.train_network, name='train_network'),
     path('image_classification/', views.image_classification, name='image_classification'),

@@ -17,6 +17,7 @@ from .forms import IngredientForm
 from taggit.models import Tag
 from .forms import RecipeForm
 
+
 logger = logging.getLogger(__name__)
 
 # Create your views here.
@@ -258,18 +259,35 @@ def create_folder(request):
     
     return redirect('folder_list')
 
+def delete_folder(request):
+    if request.method == 'POST':
+        folder_name = request.POST.get('folder_name')
+        trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
+        folder_path = os.path.join(trainset_path, folder_name)
+        if os.path.exists(folder_path):
+            try:
+                os.rmdir(folder_path)
+            except Exception as e:
+                # Handhaben Sie den Fehler entsprechend
+                pass
+    return redirect('folder_list')
+
+
 def upload_image(request):
     if request.method == 'POST':
         folder_name = request.POST.get('folder_name')
-        image = request.FILES['image']
         
+        images = request.FILES.getlist('image')
         trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
         folder_path = os.path.join(trainset_path, folder_name)
-        image_path = os.path.join(folder_path, image.name)
-        
-        with open(image_path, 'wb+') as destination:
-            for chunk in image.chunks():
-                destination.write(chunk)
+        for image in images:
+                
+            
+            image_path = os.path.join(folder_path, image.name)
+            
+            with open(image_path, 'wb+') as destination:
+                for chunk in image.chunks():
+                    destination.write(chunk)
     
     return redirect('folder_list')
 

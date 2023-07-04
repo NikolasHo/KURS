@@ -14,7 +14,11 @@
         {% for folder in folder_data %}
             <li>
                 {{ folder.foldername }} ({{ folder.images|length }} images)
-              
+                <form method="POST" action="{% url 'delete_folder' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="folder_name" value="{{ folder.foldername }}">
+                    <input type="submit" value="Delete">
+                </form>
             </li>
         {% endfor %}
     </ul>
@@ -34,7 +38,7 @@
                 <option value="{{ folder.foldername }}">{{ folder.foldername }}</option>
             {% endfor %}
         </select>
-        <input type="file" name="image">
+        <input type="file" name="image" multiple>
         <input type="submit" value="Upload Image">
     </form>
 </body>
