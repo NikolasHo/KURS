@@ -13,6 +13,7 @@ urlpatterns = [
     path('recipe/<int:recipe_id>/', views.recipe_detail, name='recipe_detail'),
     path('recipe/cooked/<int:recipe_id>/', views.cooked_recipe, name='cooked_recipe'),
     path('suggestedrecipes/', views.suggested_recipes, name='suggested_recipes'),
+    path('suggestedrecipeskeyword/', views.suggested_recipes_keyword, name='suggested_recipes_keyword'),
     path('', views.base, name='base'),
     path('folders/', views.folder_list, name='folder_list'),
     path('folders/create/', views.create_folder, name='create_folder'),

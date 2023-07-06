@@ -340,3 +340,10 @@ def suggested_recipes(request):
     keyword = "kartoffel"  
     recipes = fwl.find_recipes(keyword)
     return render(request, 'pages/suggested_recipes.html', {'recipes': recipes})
+
+def suggested_recipes_keyword(request):
+    if request.method == 'POST':
+        ingredient = request.POST.get('ingredient', '') 
+        recipes = fwl.find_recipes(ingredient)
+        return render(request, 'pages/suggested_recipes.html', {'recipes': recipes})
+    return redirect('ingredients_list')

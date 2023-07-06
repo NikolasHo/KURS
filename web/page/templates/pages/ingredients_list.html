@@ -261,6 +261,12 @@
                             <button class="btn btn-success increase-quantity" data-id="{{ ingredient.id }}"
                                 onclick="increaseQuantity('{{ ingredient.id }}')">+</button>
                         </div>
+                        <form method="POST" action="{% url 'suggested_recipes_keyword' %}">
+                            {% csrf_token %}
+                            <!-- Hier kommen Ihre vorhandenen Button-Codes -->
+                            <input type="hidden" name="ingredient" value="{{ ingredient.description }}">
+                            <button type="submit">Rezeptvorschläge</button>
+                          </form>
                     </div>
                 </div>
             </div>
