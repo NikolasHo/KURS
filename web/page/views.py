@@ -7,6 +7,7 @@ import classification.classify as classify
 import classification.classification as classification
 import io
 import food.fwl as fwl
+import shutil
 
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.http import JsonResponse
@@ -154,6 +155,18 @@ def get_ingredients(request):
     return JsonResponse(data)
 
 
+def delete_ingredient(request):
+    
+    if request.method == 'POST':
+        ingredient_id = request.POST.get('ingredient') 
+        logger.info("Zutat:" , ingredient_id)
+        ingredient_obj = get_object_or_404(Ingredient, id=ingredient_id)
+        ingredient_obj.delete()
+        return redirect('ingredients_list') 
+    
+    return redirect('ingredients_list') 
+
+
 def add_recipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
@@ -172,13 +185,11 @@ def add_recipe(request):
 
 def delete_recipe(request, recipe_id):
     recipe_obj = get_object_or_404(recipe, id=recipe_id)
-    logger.info("Try to delete recipe")
     if request.method == 'POST':
         recipe_obj.delete()
         logger.info("Recipe deleted")
         return redirect('recipe_list') 
-    
-    return render(request, 'pages/recipe_list.html', {'recipe': recipe_obj})
+    return redirect('recipe_list') 
 
 
 
@@ -266,7 +277,8 @@ def delete_folder(request):
         folder_path = os.path.join(trainset_path, folder_name)
         if os.path.exists(folder_path):
             try:
-                os.rmdir(folder_path)
+                #os.rmdir()
+                shutil.rmtree(folder_path)
             except Exception as e:
                 # Handhaben Sie den Fehler entsprechend
                 pass
