@@ -102,20 +102,25 @@ def update_quantity(request, ingredient_id):
 def classification_base(request):
     with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
         AvailableClassNames = json.load(f)
-        
-        
-        if request.method == 'POST':
-            success = train_network(request)
-        else:
-            success = None    
-            
-            return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames,'success': success})
+  
+    return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames})
+  
   
 def train_network(request):
-
-    result = classification.train_classification_network()
+    if request.method == 'POST':
+        with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+            AvailableClassNames = json.load(f)
+        result = classification.train_classification_network()
     
-    return HttpResponse(result)  # Hier wird eine HttpResponse-Instanz zurückgegeben
+        return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames,'success': result})
+
+#def train_network(request):
+
+#    result = classification.train_classification_network()
+    
+#    return HttpResponse(result)  # Hier wird eine HttpResponse-Instanz zurückgegeben
+
+
 
 
 

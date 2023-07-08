@@ -48,9 +48,11 @@ def classify_image(image):
         .format(loaded_class_names[np.argmax(score)], 100 * np.max(score))
     )
     
-    if np.argmax(score) > 90:    
+    if (100 * np.max(score)) > 70:    
+        print("Success")
         target_class = loaded_class_names[np.argmax(score)]
     else:
+        print("Nothin found")
         target_class = None
     
     
