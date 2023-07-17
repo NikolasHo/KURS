@@ -34,6 +34,12 @@ def ingredients_list(request):
     return render(request, 'pages/ingredients_list.html', {'ingredients': ingredients, 'used_tags': used_tags})
 
 
+def ingredients_list_lists(request):
+    ingredients = Ingredient.objects.filter(part_of_recipe=False)
+    used_tags = Tag.objects.all()
+    context = {'ingredients': ingredients, 'used_tags': used_tags}
+    return render(request, 'pages/ingredients_list_lists.html', context)
+
 # Form to add a new ingredient
 def add_ingredients(request):
     if request.method == 'POST':

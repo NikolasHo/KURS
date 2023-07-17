@@ -23,10 +23,6 @@
             outline: none;
         }
     }
-
-    .add-button {
-        height: 400px;
-    }
     
     .add-button i {
         font-size: 8rem;
@@ -43,7 +39,7 @@
     }
 
     .custom-card {
-        width: 50%;
+        width: 100%;
         max-width: 500px; /* Optional: Begrenze die maximale Breite der Card */
         background-color: #fafafa;
         border: 1px solid #e6e6e6;
@@ -144,6 +140,7 @@
         border: none;
         box-shadow: none;
         transition: background-color 0.3s;
+        height: 200px;
     }
 
     .add-button:hover {
@@ -177,11 +174,6 @@
         outline: none;
     }
 
-    
-    .custom-card {
-        width: 50%;
-        max-width: 500px; /* Optional: Begrenze die maximale Breite der Card */
-    }
     
     .card-container {
         display: flex;
@@ -288,7 +280,7 @@
         <div class="card-header">
             <h5 class="card-title">Neue Zutat hinzufügen</h5>
         </div>
-        <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 400px;">
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
             <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
                 <i class="fas fa-plus">+</i>
             </button>

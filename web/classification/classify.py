@@ -2,6 +2,7 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 from keras.models import load_model
 
+
 import tensorflow as tf
 import os
 import numpy as np
@@ -32,6 +33,22 @@ def classify_image(image):
 
     img_array = tf.keras.utils.img_to_array(img)
     img_array = tf.expand_dims(img_array, 0) # Create a batch
+
+    tmp_img = classification_settings.CLASSIFICATION_FILES_TMP + "\\" + "akdmasdad.jpg"
+    
+    print("Das ist der Pfad")
+    print(classification_settings.CLASSIFICATION_FILES_TMP)
+    
+    if os.path.exists(classification_settings.CLASSIFICATION_FILES_TMP):
+        # Ordner löschen
+        os.remove(tmp_img)
+        os.rmdir(classification_settings.CLASSIFICATION_FILES_TMP)
+
+    # Ordner erstellen
+    os.makedirs(classification_settings.CLASSIFICATION_FILES_TMP, exist_ok=True)
+
+    # Bild im BGR-Format speichern
+    tf.keras.preprocessing.image.save_img(tmp_img, img_array[0])
 
     # load trained model
     model = load_model(classification_settings.CLASSIFICATION_MODEL_FULLNAME)

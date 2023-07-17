@@ -56,14 +56,26 @@ def train_classification_network():
       json.dump(class_names, f)
 
 
-  # Show some of the trainings Images 
-  plt.figure(figsize=(10, 10))
-  for images, labels in train_ds.take(1):
-    for i in range(9):
-      ax = plt.subplot(3, 3, i + 1)
-      plt.imshow(images[i].numpy().astype("uint8"))
-      plt.title(class_names[labels[i]])
-      plt.axis("off")
+  if not os.path.exists(classification_settings.CLASSIFICATION_TRAINED_FILES_TMP):
+      os.makedirs(classification_settings.CLASSIFICATION_TRAINED_FILES_TMP)
+
+  # Speichern jedes Bildes aus dem train_ds-Datensatz
+  for i, (images, labels) in enumerate(train_ds.take(1)):
+      for j in range(len(images)):
+          image = images[j].numpy().astype("uint8")
+          label = class_names[labels[j]]
+
+          # Pfad zum Speichern des Bildes erstellen
+          filename = f"{label}_{i * len(images) + j}.jpg"
+          filepath = os.path.join(classification_settings.CLASSIFICATION_TRAINED_FILES_TMP, filename)
+
+          # Bild speichern
+          plt.imsave(filepath, image)
+
+          print(f"Gespeichertes Bild: {filepath}")
+    
+      
+      
 
   for image_batch, labels_batch in train_ds:
     print(image_batch.shape)
