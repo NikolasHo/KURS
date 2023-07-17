@@ -1,415 +1,222 @@
-<!-- zutaten_liste.html -->
+
 {% extends 'base.html' %}
 
 {% block content %}
-<style>
-    /* Stile für die Karten */
-    .card-img-top {
-        height: 400px; /* Gib hier die gewünschte Höhe für die Bilder an */
-        object-fit: cover;
-    }
-
-    .card-highlight {
-        animation: cardHighlight 0.3s;
-        animation-fill-mode: forwards;
-    }
-
-    @keyframes cardHighlight {
-        0% {
-            outline: 2px solid blue;
+<head>
+    <title>Zutatenliste</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .card-img-top {
+            height: calc(50vh - 140px);
+            object-fit: contain;
+        }
+        .card-column {
+            margin-bottom: 20px;
         }
         
-        100% {
-            outline: none;
-        }
-    }
-    
-    .add-button i {
-        font-size: 8rem;
-        font-weight: bold;
-    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="d-inline-block">Zutatenliste</h1>
 
-    .row-gap {
-        margin: 10px;
-    }
-    
-    .row .card-column {
-        flex-basis: calc(50% - 10px);
-        margin: 5px;
-    }
+        <!-- Dropdown-Menü für die Tag-Auswahl -->
+        <div class="form-group">
+            <label for="tag-select">Tag auswählen:</label>
+            <select class="form-control" id="tag-select" onchange="filterCards()">
+                <option value="">Alle</option>
+                {% for tag in used_tags %}
+                    <option value="{{ tag.name }}">{{ tag.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-    .custom-card {
-        width: 100%;
-        max-width: 500px; /* Optional: Begrenze die maximale Breite der Card */
-        background-color: #fafafa;
-        border: 1px solid #e6e6e6;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .card-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* Stile für Überschrift und Dropdown-Menü */
-    h1 {
-        text-align: center;
-        color: #3897f0;
-      }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    label {
-        font-weight: bold;
-    }
-
-    select {
-        padding: 5px 10px;
-        font-size: 1rem;
-        border-radius: 5px;
-        border: 1px solid #e6e6e6;
-        color: #262626;
-    }
-
-    /* Stile für die Karten-Elemente */
-    .card {
-        background-color: #ffffff;
-        border: none;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        transition: box-shadow 0.3s;
-        cursor: pointer;
-    }
-
-    .card:hover {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-header {
-        background-color: #fafafa;
-        border-bottom: 1px solid #e6e6e6;
-        padding: 10px 20px;
-    }
-
-    .card-title {
-        font-size: 1.5rem;
-        color: #262626;
-        margin-bottom: 0;
-    }
-
-    .card-body {
-        padding: 20px;
-    }
-
-    .card-text {
-        font-size: 1rem;
-        color: #737373;
-        margin-bottom: 10px;
-    }
-
-    .btn-group-toggle {
-        margin-top: 10px;
-    }
-
-    .btn-group-toggle .btn {
-        font-size: 1.2rem;
-        padding: 8px 15px;
-        border-radius: 30px;
-    }
-
-    .btn-group-toggle .btn-success {
-        background-color: #3897f0;
-        border: none;
-        box-shadow: none;
-    }
-
-    .btn-group-toggle .btn-success:hover {
-        background-color: #3396ed;
-    }
-
-    .btn-group-toggle .btn-success:focus {
-        background-color: #3396ed;
-        box-shadow: none;
-    }
-
-    /* Stile für den Button zum Hinzufügen einer neuen Zutat */
-    .add-button {
-        background-color: #3897f0;
-        border: none;
-        box-shadow: none;
-        transition: background-color 0.3s;
-        height: 200px;
-    }
-
-    .add-button:hover {
-        background-color: #3396ed;
-    }
-
-    .add-button:focus {
-        background-color: #3396ed;
-        box-shadow: none;
-    }
-
-    /* Stile für das Dropdown-Menü */
-    .dropdown-menu {
-        border: none;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    .dropdown-item {
-        padding: 10px 20px;
-        font-size: 1rem;
-        color: #262626;
-        transition: background-color 0.3s;
-    }
-
-    .dropdown-item:hover {
-        background-color: #f2f2f2;
-    }
-
-    .dropdown-item:focus {
-        background-color: #f2f2f2;
-        outline: none;
-    }
-
-    
-    .card-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* Neue Stile für Karten mit Quantity = 0 */
-    .card-zero-quantity {
-        opacity: 0.5;
-    }
-
-    /* Neue Stile für die Karten-Elemente */
-    .card {
-        /* ... (bestehender CSS-Stil) ... */
-        transition: box-shadow 0.3s;
-        cursor: pointer;
-        position: relative; /* Hinzugefügt, um das Positionieren der Karten zu ermöglichen */
-    }
-
-    /* Neue Stile für die Karten-Elemente mit Quantity = 0 */
-    .card.card-zero-quantity {
-        z-index: -1; /* Setzt die Karten mit Quantity = 0 unter die anderen Karten */
-    }
-    
-    .card.card-zero-quantity::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.2); /* Hintergrundfarbe für die ausgegraute Karte */
-        z-index: 1; /* Setzt die Hintergrundebene über den Inhalt der Karte */
-    }
-
-</style>
-
-<h1 class="d-inline-block">Zutatenliste</h1>
-
-<!-- Dropdown-Menü für die Tag-Auswahl -->
-<div class="form-group">
-    <label for="tag-select">Tag auswählen:</label>
-    <select class="form-control" id="tag-select" onchange="filterCards()">
-        <option value="">Alle</option>
-        {% for tag in used_tags %}
-            <option value="{{ tag.name }}">{{ tag.name }}</option>
-        {% endfor %}
-    </select>
-</div>
-
-<div class="row">
-
-    {% for ingredient in ingredients %}
-        {% if not ingredient.part_of_recipe %}
-            {% if forloop.counter|divisibleby:2 %}
+        <div class="row">
+            {% for ingredient in ingredients %}
+                {% if not ingredient.part_of_recipe %}
+                    <div class="col-md-6 card-column" data-tags="{{ ingredient.tags.all|join:',' }}">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">{{ ingredient.description }}</h5>
+                            </div>
+                            <img src="{{ ingredient.img.url }}" class="card-img-top" alt="{{ ingredient.description }}"
+                                onclick="reduceQuantity('{{ ingredient.id }}')">
+                                
+                            <div class="card-body">
+                                <p class="card-text">Mindesthaltbarkeitsdatum: {{ ingredient.mhd }}</p>
+                                <p class="card-text">Anzahl: <span id="quantity-{{ ingredient.id }}">{{ ingredient.quantity }}</span></p>
+                                <p class="card-text">Rubrik: {% for tmp_tag in ingredient.tags.all %}{{ tmp_tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                                <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
+                                    <button class="btn btn-success increase-quantity" data-id="{{ ingredient.id }}"
+                                        onclick="increaseQuantity('{{ ingredient.id }}')">+</button>
+                                </div>
+                                <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
+                                    <form method="POST" action="{% url 'suggested_recipes_keyword' %}">
+                                        {% csrf_token %}
+                                        <!-- Hier kommen Ihre vorhandenen Button-Codes -->
+                                        <input type="hidden" name="ingredient" value="{{ ingredient.description }}">
+                                        <button type="submit" class="btn btn-success">Rezeptvorschläge</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'delete_ingredient' %}">
+                                        {% csrf_token %}
+                                        <!-- Hier kommen Ihre vorhandenen Button-Codes -->
+                                        <input type="hidden" name="ingredient" value="{{ ingredient.id }}">
+                                        <button type="submit" class="btn btn-success">Zutat löschen</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="card-container">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <h5 class="card-title">Neue Zutat hinzufügen</h5>
                 </div>
-                <p></p>
-                <div class="row">
-            {% endif %}
-            {% if ingredient.quantity == 0 %}
-            <div class="col-md-6 card-column card-zero-quantity" data-tags="{{ ingredient.tags.all|join:',' }}">
-            {% else %}
-                <div class="col-md-6 card-column" data-tags="{{ ingredient.tags.all|join:',' }}">
-            {% endif %}
-                <div class="card" id="card-{{ ingredient.id }}" onclick="highlightCard(this)">
-                    <div class="card-header">
-                        <h5 class="card-title">{{ ingredient.description }}</h5>
-                    </div>
-                    <img src="{{ ingredient.img.url }}" class="card-img-top" alt="{{ ingredient.description }}"
-                        onclick="reduceQuantity('{{ ingredient.id }}')">
-                    <div class="card-body">
-                        <p class="card-text">Mindesthaltbarkeitsdatum: {{ ingredient.mhd }}</p>
-                        <p class="card-text">Anzahl: <span id="quantity-{{ ingredient.id }}">{{ ingredient.quantity }}</span></p>
-                        <p class="card-text">Rubrik: {% for tmp_tag in ingredient.tags.all %}{{ tmp_tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-                        <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
-                            <button class="btn btn-success increase-quantity" data-id="{{ ingredient.id }}"
-                                onclick="increaseQuantity('{{ ingredient.id }}')">+</button>
-                        </div>
-                        <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
-                            <form method="POST" action="{% url 'suggested_recipes_keyword' %}">
-                                {% csrf_token %}
-                                <!-- Hier kommen Ihre vorhandenen Button-Codes -->
-                                <input type="hidden" name="ingredient" value="{{ ingredient.description }}">
-                                <button type="submit" class="btn btn-success">Rezeptvorschläge</button>
-                              </form>
-                              <form method="POST" action="{% url 'delete_ingredient' %}">
-                                {% csrf_token %}
-                                <!-- Hier kommen Ihre vorhandenen Button-Codes -->
-                                <input type="hidden" name="ingredient" value="{{ ingredient.id }}">
-                                <button type="submit" class="btn btn-success">Zutat löschen</button>
-                              </form>
-                        </div>
-                    
-                        
-                    </div>
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
+                        <i class="fas fa-plus">+</i>
+                    </button>
                 </div>
             </div>
-        {% endif %}
-    {% endfor %}
-</div>
-<div class="card-container">
-    <div class="card custom-card">
-        <div class="card-header">
-            <h5 class="card-title">Neue Zutat hinzufügen</h5>
-        </div>
-        <div class="card-body d-flex flex-column justify-content-center align-items-center">
-            <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
-                <i class="fas fa-plus">+</i>
-            </button>
         </div>
     </div>
-</div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+function highlightCard(card) {
+    card.classList.add('card-highlight');
+    setTimeout(function() {
+        card.classList.remove('card-highlight');
+    }, 300);
+}
 
-    function highlightCard(card) {
-        card.classList.add('card-highlight');
-        setTimeout(function() {
-            card.classList.remove('card-highlight');
-        }, 300);
-    }
+function showPopup() {
+    var popup = document.getElementById('success-popup');
+    console.log("Show popup");
+    popup.style.display = 'block';
+    setTimeout(function() {
+        popup.style.display = 'none';
+    }, 3000);  // Das Popup nach 3 Sekunden ausblenden (3000 Millisekunden)
+}
 
-    function reduceQuantity(ingredientId) {
-        var quantityElement = document.getElementById('quantity-' + ingredientId);
-        var quantity = parseInt(quantityElement.innerText);
+function reduceQuantity(ingredientId) {
+    var quantityElement = document.getElementById('quantity-' + ingredientId);
+    var quantity = parseInt(quantityElement.innerText);
 
-        if (quantity > 0) {
-            // Reduziere die Anzahl um 1
-            quantity -= 1;
-
-            // Aktualisiere die Anzeige der Anzahl
-            quantityElement.innerText = quantity;
-
-            if (quantity === 0) {
-                // Wenn die Anzahl 0 erreicht ist, entferne die Zutat aus der Liste
-                updateQuantityOnServer(ingredientId, quantity);
-                
-                // Dont remove the card from the list to increase the entry later.
-
-                // var card = document.getElementById('card-' + ingredientId);
-                // card.parentNode.removeChild(card);
-            }
-
-            // Sende AJAX-Anfrage an den Server, um die Anzahl zu aktualisieren
-            updateQuantityOnServer(ingredientId, quantity);
-        }
-    }
-
-    function increaseQuantity(ingredientId) {
-        var quantityElement = document.getElementById('quantity-' + ingredientId);
-        var quantity = parseInt(quantityElement.innerText);
-
-        // Erhöhe die Anzahl um 1
-        quantity += 1;
+    if (quantity > 0) {
+        // Reduziere die Anzahl um 1
+        quantity -= 1;
 
         // Aktualisiere die Anzeige der Anzahl
         quantityElement.innerText = quantity;
 
+
+        
+        if (quantity === 0) {
+            // Wenn die Anzahl 0 erreicht ist, entferne die Zutat aus der Liste
+            updateQuantityOnServer(ingredientId, quantity);
+            
+            // Dont remove the card from the list to increase the entry later.
+
+            // var card = document.getElementById('card-' + ingredientId);
+            // card.parentNode.removeChild(card);
+        }
+
         // Sende AJAX-Anfrage an den Server, um die Anzahl zu aktualisieren
         updateQuantityOnServer(ingredientId, quantity);
     }
+}
+
+function increaseQuantity(ingredientId) {
+    var quantityElement = document.getElementById('quantity-' + ingredientId);
+    var quantity = parseInt(quantityElement.innerText);
+
+    // Erhöhe die Anzahl um 1
+    quantity += 1;
+
+    // Aktualisiere die Anzeige der Anzahl
+    quantityElement.innerText = quantity;
+
+    // Sende AJAX-Anfrage an den Server, um die Anzahl zu aktualisieren
+    updateQuantityOnServer(ingredientId, quantity);
+}
 
 
-    function updateQuantityOnServer(ingredientId, quantity) {
-        var url = '/update_quantity/' + ingredientId + '/';
-        var csrftoken = getCookie('csrftoken');
-        var data = {
-            'new_quantity': quantity
-        };
+function updateQuantityOnServer(ingredientId, quantity) {
+    var url = '/update_quantity/' + ingredientId + '/';
+    var csrftoken = getCookie('csrftoken');
+    var data = {
+        'new_quantity': quantity
+    };
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Quantity was updated');
-                
-            } else {
-                console.log('Error while update quantity');
-            }
-        })
-        .catch(error => {
-            console.log('Error while sending Ajax request:', error);
-        });
-    }
-
-    // Funktion zum Abrufen des CSRF-Tokens aus den Cookies
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                // Überprüfe, ob der Cookie den Namen 'csrftoken' hat
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Quantity was updated');
+            
+        } else {
+            console.log('Error while update quantity');
         }
-        return cookieValue;
-    }
+    })
+    .catch(error => {
+        console.log('Error while sending Ajax request:', error);
+    });
+}
 
-    function navigateToAddPage() {
-        window.location.href = 'add/';
-    }
-
-    function filterCards() {
-        var selectElement = document.getElementById('tag-select');
-        var selectedTagId = selectElement.value;
-        var cardColumns = document.getElementsByClassName('card-column');
-
-        for (var i = 0; i < cardColumns.length; i++) {
-            var cardColumn = cardColumns[i];
-            var tags = cardColumn.getAttribute('data-tags').split(',');
-
-            if (selectedTagId === '' || tags.includes(selectedTagId)) {
-                cardColumn.style.display = 'block';
-            } else {
-                cardColumn.style.display = 'none';
+// Funktion zum Abrufen des CSRF-Tokens aus den Cookies
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Überprüfe, ob der Cookie den Namen 'csrftoken' hat
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
     }
+    return cookieValue;
+}
 
-    // Filter initial anwenden
-    filterCards();
+function navigateToAddPage() {
+    window.location.href = 'add/';
+}
+
+function filterCards() {
+    var selectElement = document.getElementById('tag-select');
+    var selectedTagId = selectElement.value;
+    var cardColumns = document.getElementsByClassName('card-column');
+
+    for (var i = 0; i < cardColumns.length; i++) {
+        var cardColumn = cardColumns[i];
+        var tags = cardColumn.getAttribute('data-tags').split(',');
+
+        if (selectedTagId === '' || tags.includes(selectedTagId)) {
+            cardColumn.style.display = 'block';
+        } else {
+            cardColumn.style.display = 'none';
+        }
+    }
+}
+
+// Filter initial anwenden
+filterCards();
 </script>
 
 {% endblock %}
-
-
 
