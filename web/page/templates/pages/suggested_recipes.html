@@ -1,60 +1,22 @@
-<!-- recipes.html -->
-
 {% extends 'base.html' %}
 
 {% block content %}
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Recipes</title>
-    <style>
-        .card {
-            display: inline-block;
-            width: 100%;
-            max-width: 400px; /* Maximale Breite auf 400px begrenzen */
-            height: auto; /* Höhe an den Inhalt anpassen */
-            margin: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .card img {
-            max-width: 100%;
-            max-height: 200px;
-            object-fit: contain;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-
-        h1 {
-            font-size: 24px; /* Größere Schriftgröße für den Titel */
-            margin-bottom: 20px; /* Zusätzlicher Abstand nach unten */
-        }
-        
-        @media only screen and (max-width: 500px) {
-            /* Für Bildschirme mit einer Breite von maximal 500px */
-            .card {
-                width: 100%; /* Volle Breite */
-                max-width: none; /* Maximale Breitenbegrenzung aufheben */
-            }
-        }
-    </style>
-</head>
-<body>
-    <h1>Recipes</h1>
-    {% for recipe in recipes %}
-        <div class="card">
-            <img src="{{ recipe.image }}" alt="{{ recipe.header }}" onclick="window.location.href='{{ recipe.link }}';">
-            <h3>{{ recipe.header }}</h3>
+    <div class="container">
+        <h1 class="text-center mt-3">Recipes</h1>
+        <div class="card-columns">
+            {% for recipe in recipes %}
+                <div class="card">
+                    <img src="{{ recipe.image }}" class="card-img-top img-fluid" alt="{{ recipe.header }}">
+                    <div class="card-body">
+                        <h3 class="card-title">{{ recipe.header }}</h3>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-        {% if forloop.counter|divisibleby:2 %}
-            <br>
-        {% endif %}
-    {% endfor %}
-</body>
-</html>
+    </div>
 
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
