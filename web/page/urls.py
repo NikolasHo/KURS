@@ -24,5 +24,6 @@ urlpatterns = [
     path('train_network/', views.train_network, name='train_network'),
     path('image_classification/', views.image_classification, name='image_classification'),
     path('classification', views.classification_base, name='classification'),
+    path('test', views.test, name='test'),
    
 ]

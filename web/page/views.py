@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 def base(request):
     return render(request, 'base.html', {})
 
+def test(request):
+    return render(request, 'pages/test.html', {})
 
 def ingredients_list(request):
     ingredients = Ingredient.objects.all()
