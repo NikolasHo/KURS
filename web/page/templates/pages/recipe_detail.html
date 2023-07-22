@@ -26,6 +26,7 @@
     {% if step.recipe_step_img %}
       <img src="{{ step.recipe_step_img.url }}" alt="Schritt {{ forloop.counter }}" class="img-fluid">
     {% endif %}
+    <h3>{{ step.recipe_step_headline }}</h3>
     <p>{{ step.recipe_step_description }}</p>
   </div>
 {% endfor %}

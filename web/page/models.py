@@ -24,7 +24,7 @@ def upload_image(instance, filename):
 
 class Ingredient(models.Model):
     img = models.ImageField(upload_to=upload_image,null=True, blank=True)
-    description = models.TextField()
+    description = models.TextField(default="")
     mhd = models.DateField(null=True, blank=True)
     quantity = models.PositiveIntegerField(null=True, blank=True)
     tags = TaggableManager(blank=True)
@@ -35,13 +35,14 @@ class Ingredient(models.Model):
     
 class recipe_step(models.Model):
     recipe_step_img = models.ImageField(upload_to=upload_image, blank=True, null=True)
-    recipe_step_description = models.TextField()
+    recipe_step_headline = models.TextField(default="")
+    recipe_step_description = models.TextField(default="")
     recipe_step_ingredients = models.ManyToManyField(Ingredient)
     pass
     
 class recipe(models.Model):
     img = models.ImageField(upload_to=upload_image)
-    headline = models.TextField()
-    description = models.TextField()
+    headline = models.TextField(default="")
+    description = models.TextField(default="")
     recipe_steps = models.ManyToManyField(recipe_step)
     ingredients = models.ManyToManyField(Ingredient)

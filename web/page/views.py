@@ -188,7 +188,7 @@ def add_recipe(request):
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    logger.debug(f"Form data before saving: {form.cleaned_data}")
+                    logger.info(f"Form data before saving: {form.cleaned_data}")
                     form.save()
                     logger.info("Form data saved successfully.")
             except Exception as e:

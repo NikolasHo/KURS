@@ -59,8 +59,11 @@
       var newStep = `
       <div id="steps-container" class="mb-3">
         <div class="step">
-          <label for="step-description" class="form-label">Schritt:</label>
-          <textarea name="steps" class="form-control step-description"></textarea>
+          <label for="step-headline" class="form-label">Schritt:</label>
+          <input type="text" name="step_headline" class="form-control step-headline"></input>
+  
+          <label for="step-description" class="form-label">Beschreibung</label>
+          <textarea name="step_description" class="form-control step-description"></textarea>
   
           <label for="steps-image" class="form-label">Bild:</label>
           <input type="file" name="step_img" id="steps-image" class="form-control" accept="image/*" >
@@ -138,8 +141,11 @@
     <h2>Schritte:</h2>
     <div id="steps-container" class="mb-3">
       <div class="step">
-        <label for="step-description" class="form-label">Schritt:</label>
-        <textarea name="steps" class="form-control step-description"></textarea>
+        <label for="step-headline" class="form-label">Schritt:</label>
+        <input type="text" name="step_headline" class="form-control step-headline"></input>
+
+        <label for="step-description" class="form-label">Beschreibung</label>
+        <textarea name="step_description" class="form-control step-description"></textarea>
 
         <label for="steps-image" class="form-label">Bild:</label>
         <input type="file" name="step_img" id="steps-image" class="form-control" accept="image/*" >

@@ -22,7 +22,8 @@ class RecipeForm(forms.Form):
     ingredient_weight = forms.CharField(label='Gewicht', widget=forms.Textarea)
     
     
-    steps = forms.CharField(label='Schritte', widget=forms.Textarea)
+    step_headline = forms.CharField(label='Schritt', widget=forms.Textarea)
+    step_description = forms.CharField(label='Beschreibung', widget=forms.Textarea)
     step_img = forms.ImageField(label='Bild für jeden Schritt', required=False)
 
     def save(self):
@@ -46,16 +47,22 @@ class RecipeForm(forms.Form):
             )
             recipe_data.ingredients.add(ingredient_tmp)
 
-        steps_data = self.data.getlist('steps')
+        step_headlines = self.data.getlist('step_headline')
+        step_descriptions = self.data.getlist('step_description')
         step_images = self.files.getlist('step_img')
 
-        for index, step_description in enumerate(steps_data):
-            step_image = step_images[index] if index < len(step_images) else None
+        for i in range(len(step_headlines)):
+            headline = step_headlines[i]
+            description = step_descriptions[i]
+            image = step_images[i] if i < len(step_images) else None
+
             step = recipe_step.objects.create(
-                recipe_step_description=step_description,
+                recipe_step_description=description,
+                recipe_step_headline=headline,
             )
-            if step_image:
-                step.recipe_step_img = step_image
+
+            if image:
+                step.recipe_step_img = image
             step.save()
             recipe_data.recipe_steps.add(step)
 
