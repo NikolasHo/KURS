@@ -8,30 +8,37 @@
   <title>Rezeptliste</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <style>
+    .card-column {
+        margin-bottom: 20px;
+    }
+    
+</style>
 </head>
 <body>
   <div class="container">
     <h1 class="text-center mt-3">Rezeptliste</h1>
 
-    <div class="card-deck">
+    <div class="row">
       {% for recipe in recipes %}
-        <div class="card mb-4">
-          <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}" class="card-img-top" onclick="navigateToRecipe({{ recipe.id }})">
-          <div class="card-body">
-            <h5 class="card-title">{{ recipe.headline }}</h5>
-            <p class="card-text">{{ recipe.description }}</p>
+          <div class="col-md-6 card-column">
+              <div class="card mb-6" >
+                  <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}" class="card-img-top" onclick="navigateToRecipe({{ recipe.id }})">
+                  <div class="card-body">
+                      <h5 class="card-title">{{ recipe.headline }}</h5>
+                      <p class="card-text">{{ recipe.description }}</p>
+                  </div>
+                  <div class="card-footer">
+                      <form id="delete-form" action="{% url 'delete_recipe' recipe.id %}" method="POST">
+                          {% csrf_token %}
+                          <button class="btn btn-danger btn-block" type="submit">Rezept löschen</button>
+                      </form>
+                  </div>
+              </div>
           </div>
-          <div class="card-footer">
-            <form  id="delete-form" action="{% url 'delete_recipe' recipe.id %}" method="POST">
-              {% csrf_token %}
-                <button class="btn btn-danger btn-block" type="submit">Rezept löschen
-                </button>
-            </form>
-          </div>
-        </div>
       {% endfor %}
-    </div>
-    <div class="card mb-4">
+  </div>
+    <div class="card mb-6">
  
         <div class="card custom-card">
             <div class="card-header">
