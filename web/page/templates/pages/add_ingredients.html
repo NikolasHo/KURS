@@ -1,89 +1,42 @@
-
 {% extends 'base.html' %}
 
 {% block content %}
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Zutat hinzufügen</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-    <style>
-        body {
-            padding-top: 60px;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 30px;
-            color: #333;
-        }
-        label {
-            font-weight: bold;
-        }
-        .form-control-file {
-            margin-bottom: 10px;
-        }
-        .form-control {
-            border-radius: 0;
-        }
-        .btn-primary {
-            border-radius: 0;
-            background-color: #3897f0;
-            border-color: #3897f0;
-        }
-        .btn-primary:hover, .btn-primary:focus {
-            background-color: #357ae8;
-            border-color: #357ae8;
-        }
-        .tagsinput {
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Zutat hinzufügen</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="id_img">Bild</label>
-                <input type="file" class="form-control-file" accept="image/*" capture="camera" name="img" id="id_img" required>
-            </div>
-            <div class="form-group">
-                <label for="id_description">Beschreibung</label>
-                <textarea name="description" class="form-control" id="id_description" rows="5" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="id_mhd">Mindesthaltbarkeitsdatum</label>
-                <input type="date" class="form-control" name="mhd" id="id_mhd" required>
-            </div>
-            <div class="form-group">
-                <label for="id_quantity">Anzahl</label>
-                <input type="number" class="form-control" name="quantity" id="id_quantity"  min="1" max="100" value="1" required>
-            </div>
-            <div class="form-group">
-                <label for="id_weight">Gewicht</label>
-                <input type="number" class="form-control" name="weight" id="id_weight"  min="0" max="10000" value="0">
-            </div>
-            <div class="form-group">
-                <label>Tags</label>
-                <input type="text" data-role="tagsinput" class="form-control tagsinput" name="tags">
-                <select id="tags" name="tags" multiple>
-                    {% for tag in used_tags %}
-                        <option value="{{ tag.name }}">{{ tag.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Zutat hinzufügen</button>
-        </form>
+<div class="container mt-4">
+  <h1>Zutat hinzufügen</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="id_img">Bild</label>
+      <input type="file" class="form-control-file" accept="image/*" capture="camera" name="img" id="id_img" required>
     </div>
+    <div class="form-group">
+      <label for="id_description">Beschreibung</label>
+      <input type="text" name="description" class="form-control" id="id_description" required>
+    </div>
+    <div class="form-group">
+      <label for="id_mhd">Mindesthaltbarkeitsdatum</label>
+      <input type="date" class="form-control" name="mhd" id="id_mhd" required>
+    </div>
+    <div class="form-group">
+      <label for="id_quantity">Anzahl</label>
+      <input type="number" class="form-control" name="quantity" id="id_quantity" min="1" max="100" value="1" required>
+    </div>
+    <div class="form-group">
+      <label for="id_weight">Gewicht</label>
+      <input type="number" class="form-control" name="weight" id="id_weight" min="0" max="10000" value="0">
+    </div>
+    <div class="form-group">
+      <label for="tags">Tags</label>
+      <select id="tags" name="tags" multiple class="form-control">
+        {% for tag in used_tags %}
+          <option value="{{ tag.name }}">{{ tag.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Zutat hinzufügen</button>
+  </form>
+</div>
+
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
@@ -109,7 +62,7 @@
                 .then(data => {
                     if (data.success) {
                         console.log('Image was classified');
-                        $('#id_description').html(data.image_class);
+                        document.getElementById('id_description').value = data.image_class;
                     } else {
                         console.log('Error classify your image');
                     }

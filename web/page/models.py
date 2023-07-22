@@ -34,7 +34,7 @@ class Ingredient(models.Model):
     
     
 class recipe_step(models.Model):
-    recipe_step_img = models.ImageField(upload_to=upload_image)
+    recipe_step_img = models.ImageField(upload_to=upload_image, blank=True, null=True)
     recipe_step_description = models.TextField()
     recipe_step_ingredients = models.ManyToManyField(Ingredient)
     pass

@@ -5,75 +5,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rezept erstellen</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fafafa;
-      margin: 0;
-      padding: 20px;
-    }
-    
-    h1 {
-      text-align: center;
-      color: #3897f0;
-    }
-    
-    form {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    label {
-      display: block;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    
-    input[type="text"],
-    textarea,
-    input[type="file"],
-    input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 16px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    
-    textarea {
-      height: 100px;
-    }
-    
-    button {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      background-color: #3897f0;
-      border: none;
-      color: #fff;
-      font-size: 16px;
-      font-weight: bold;
-      margin-top: 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    button:hover {
-      background-color: #357ae8;
-    }
-    
-    .ingredient_list,
-    .step {
-      margin-bottom: 10px;
-    }
-  </style>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
   <script>
@@ -126,29 +57,33 @@
     // Funktion zum Hinzufügen eines neuen Schritts
     function addStep() {
       var newStep = `
+      <div id="steps-container" class="mb-3">
         <div class="step">
-          <label for="step-description">Schritt:</label>
-          <textarea name="steps" class="step-description"></textarea>
-          <label for="steps-image">Bild:</label>
-          <input type="file" name="step_img" id="steps-image" accept="image/*" required>
-          <button type="button" onclick="removeStep(this)">Schritt entfernen</button>
+          <label for="step-description" class="form-label">Schritt:</label>
+          <textarea name="steps" class="form-control step-description"></textarea>
+  
+          <label for="steps-image" class="form-label">Bild:</label>
+          <input type="file" name="step_img" id="steps-image" class="form-control" accept="image/*" >
         </div>
+      </div>
       `;
       $('#steps-container').append(newStep);
     }
 
     function addIngredient() {
       var newIngredient = `
+      <div id="ingredient-container" class="mb-3">
         <div class="ingredient_list">
-          <label for="ingredient-description">Zutat</label>
-          <textarea type="text" name="ingredient_description" id="ingredient-description" rows="5"></textarea>
-
-          <label for="ingredient-quantity">Anzahl</label>
-          <input type="number" name="ingredient_quantity" id="ingredient-quantity"  min="1" max="100" value="1">
-
-          <label for="ingredient-weight">Gewicht</label>
-          <input type="number" name="ingredient_weight" id="ingredient-weight"  min="0" max="10000" value="0">
+          <label for="ingredient-description" class="form-label">Zutat:</label>
+          <input type="text" name="ingredient_description" id="ingredient-description" class="form-control"></input>
+  
+          <label for="ingredient-quantity" class="form-label">Anzahl:</label>
+          <input type="number" name="ingredient_quantity" id="ingredient-quantity" class="form-control" min="1" max="100" value="1">
+  
+          <label for="ingredient-weight" class="form-label">Gewicht:</label>
+          <input type="number" name="ingredient_weight" id="ingredient-weight" class="form-control" min="0" max="10000" value="0">
         </div>
+      </div>
       `;
       $('#ingredient-container').append(newIngredient);
     }
@@ -160,53 +95,62 @@
   </script>
 </head>
 <body>
-  <h1>Rezept erstellen</h1>
+<div class="container mt-4">
+  <h1 class="mb-4">Rezept erstellen</h1>
   <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     
-    <label for="recipe-name">Rezeptname:</label>
-    <input type="text" name="recipe_name" id="recipe-name" required>
+    <div class="mb-3">
+      <label for="recipe-name" class="form-label">Rezeptname:</label>
+      <input type="text" name="recipe_name" id="recipe-name" class="form-control" required>
+    </div>
     
-    <label for="recipe-description">Beschreibung:</label>
-    <textarea name="recipe_description" id="recipe-description" required></textarea>
+    <div class="mb-3">
+      <label for="recipe-description" class="form-label">Beschreibung:</label>
+      <textarea name="recipe_description" id="recipe-description" class="form-control" required></textarea>
+    </div>
     
-    <label for="recipe-image">Bild:</label>
-    <input type="file" name="recipe_image" id="recipe-image" accept="image/*" required>
+    <div class="mb-3">
+      <label for="recipe-image" class="form-label">Bild:</label>
+      <input type="file" name="recipe_image" id="recipe-image" class="form-control" accept="image/*" required>
+    </div>
     
     <h2>Zutaten:</h2>
-    <div id="ingredient-container">
+    <div id="ingredient-container" class="mb-3">
       <div class="ingredient_list">
-        <label for="ingredient-description">Zutat</label>
-        <textarea type="text" name="ingredient_description" id="ingredient-description" rows="5"></textarea>
+        <label for="ingredient-description" class="form-label">Zutat:</label>
+        <input type="text" name="ingredient_description" id="ingredient-description" class="form-control"></input>
 
-        <label for="ingredient-quantity">Anzahl</label>
-        <input type="number" name="ingredient_quantity" id="ingredient-quantity"  min="1" max="100" value="1">
+        <label for="ingredient-quantity" class="form-label">Anzahl:</label>
+        <input type="number" name="ingredient_quantity" id="ingredient-quantity" class="form-control" min="1" max="100" value="1">
 
-        <label for="ingredient-weight">Gewicht</label>
-        <input type="number" name="ingredient_weight" id="ingredient-weight"  min="0" max="10000" value="0">
+        <label for="ingredient-weight" class="form-label">Gewicht:</label>
+        <input type="number" name="ingredient_weight" id="ingredient-weight" class="form-control" min="0" max="10000" value="0">
       </div>
     </div>
-    <button type="button" onclick="addIngredient()">Zutat hinzufügen</button>
+    <button type="button" onclick="addIngredient()" class="btn btn-primary mb-3">Zutat hinzufügen</button>
 
     <h2>Zuletzt verwendete Zutaten:</h2>
-    <ul id="recent-ingredients">
+    <ul id="recent-ingredients" class="mb-3">
       <!-- Hier werden die zuletzt verwendeten Ingredients eingefügt -->
     </ul>
 
     <h2>Schritte:</h2>
-    <div id="steps-container">
+    <div id="steps-container" class="mb-3">
       <div class="step">
-        <label for="step-description">Schritt:</label>
-        <textarea name="steps" class="step-description"></textarea>
+        <label for="step-description" class="form-label">Schritt:</label>
+        <textarea name="steps" class="form-control step-description"></textarea>
 
-        <label for="steps-image">Bild:</label>
-        <input type="file" name="step_img" id="steps-image" accept="image/*" required>
+        <label for="steps-image" class="form-label">Bild:</label>
+        <input type="file" name="step_img" id="steps-image" class="form-control" accept="image/*" >
       </div>
     </div>
-    <button type="button" onclick="addStep()">Schritt hinzufügen</button>
+    <button type="button" onclick="addStep()" class="btn btn-primary mb-3">Schritt hinzufügen</button>
     
-    <button type="submit">Rezept speichern</button>
+    <button type="submit" class="btn btn-success">Rezept speichern</button>
   </form>
+</div>
 </body>
 </html>
+
 {% endblock %}

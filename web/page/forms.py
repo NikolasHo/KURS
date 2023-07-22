@@ -23,7 +23,7 @@ class RecipeForm(forms.Form):
     
     
     steps = forms.CharField(label='Schritte', widget=forms.Textarea)
-    step_img = forms.ImageField(label='Bild für jeden Schritt')
+    step_img = forms.ImageField(label='Bild für jeden Schritt', required=False)
 
     def save(self):
         # Speichern Sie das Rezept hier entsprechend Ihrer Logik
@@ -48,12 +48,18 @@ class RecipeForm(forms.Form):
 
         steps_data = self.data.getlist('steps')
         step_images = self.files.getlist('step_img')
-        for step_description, step_image in zip(steps_data, step_images):
+
+        for index, step_description in enumerate(steps_data):
+            step_image = step_images[index] if index < len(step_images) else None
             step = recipe_step.objects.create(
                 recipe_step_description=step_description,
-                recipe_step_img=step_image
             )
+            if step_image:
+                step.recipe_step_img = step_image
+            step.save()
             recipe_data.recipe_steps.add(step)
+
+
 
         return recipe_data
 

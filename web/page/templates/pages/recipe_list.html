@@ -6,121 +6,50 @@
 <html>
 <head>
   <title>Rezeptliste</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fafafa;
-      margin: 0;
-      padding: 0;
-    }
-    h1 {
-      text-align: center;
-      color: #3897f0;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 20px;
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mt-3">Rezeptliste</h1>
 
-    .recipe-card {
-      width: calc(50% - 20px);
-      margin: 10px;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
+    <div class="card-deck">
+      {% for recipe in recipes %}
+        <div class="card mb-4">
+          <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}" class="card-img-top" onclick="navigateToRecipe({{ recipe.id }})">
+          <div class="card-body">
+            <h5 class="card-title">{{ recipe.headline }}</h5>
+            <p class="card-text">{{ recipe.description }}</p>
+          </div>
+          <div class="card-footer">
+            <form  id="delete-form" action="{% url 'delete_recipe' recipe.id %}" method="POST">
+              {% csrf_token %}
+                <button class="btn btn-danger btn-block" type="submit">Rezept löschen
+                </button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="card mb-4">
+ 
+        <div class="card custom-card">
+            <div class="card-header">
+                <h5 class="card-title">Neues Rezept hinzufügen</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
+                    <i class="fas fa-plus">+</i>
+                </button>
+            </div>
+        </div>
+    </div>
 
-    .recipe-card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-    }
+  </div>
 
-    .recipe-card .card-content {
-      padding: 20px;
-    }
-
-    .recipe-card h2 {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 0 0 10px;
-    }
-
-    .recipe-card p {
-      font-size: 14px;
-      margin: 0 0 10px;
-    }
-
-    .recipe-card ul {
-      padding-left: 20px;
-      margin: 0;
-    }
-
-    .recipe-card ul li {
-      font-size: 14px;
-      margin-bottom: 5px;
-      list-style-type: disc;
-    }
-
-    .recipe-card .card-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      background-color: #f5f5f5;
-    }
-
-    .recipe-card .likes {
-      color: #ff5b5b;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .recipe-card .likes i {
-      margin-right: 5px;
-    }
-
-    .recipe-card .comments {
-      color: #999;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .recipe-card .comments i {
-      margin-right: 5px;
-    }
-
-    /* Stile für den Button zum Hinzufügen einer neuen Zutat */
-    .add-button {
-        background-color: #3897f0;
-        border: none;
-        box-shadow: none;
-        transition: background-color 0.3s;
-    }
-
-    .add-button:hover {
-        background-color: #3396ed;
-    }
-
-    .add-button:focus {
-        background-color: #3396ed;
-        box-shadow: none;
-    }
-
-    .add-button {
-      height: 400px;
-    }
-    
-    .add-button i {
-        font-size: 8rem;
-        font-weight: bold;
-    }
-  </style>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
   <script>
     function navigateToRecipe(recipeId) {
       window.location.href = '/recipe/' + recipeId + '/';
@@ -129,59 +58,7 @@
     function navigateToAddPage() {
       window.location.href = '/recipe/add';
     }
-
   </script>
-</head>
-<body>
-  <h1>Rezeptliste</h1>
-  
-  <div class="container">
-    {% for recipe in recipes %}
-      <div class="recipe-card" onclick="navigateToRecipe({{ recipe.id }})">
-        <img src="{{ recipe.img.url }}" alt="{{ recipe.headline }}">
-        <div class="card-content">
-          <h2>{{ recipe.headline }}</h2>
-          <p>{{ recipe.description }}</p>
-          <ul>
-            {% for ingredient in recipe.ingredients.all %}
-              <li>{{ ingredient.description }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-        <div class="card-footer">
-          <div class="likes">
-            <i class="fa fa-heart"></i> 1234
-          </div>
-          <div class="comments">
-            <i class="fa fa-comment"></i> 567
-          </div>
-          <form id="delete-form" action="{% url 'delete_recipe' recipe.id %}" method="POST">
-            {% csrf_token %}
-            <div class="delete-button">
-              <button type="submit">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </form>
-        </div>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-
-  <div class="container">
-      <div class="recipe-card">
-        <div class="card-content">
-          <h2>Rezept hinzufügen</h2> 
-        </div>
-        <div class="card-content d-flex flex-column justify-content-center align-items-center" style="height: 400px;">
-          <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
-              <i class="fas fa-plus">+</i>
-          </button>
-      </div>
-      </div>
-  </div>
-
 </body>
 </html>
 

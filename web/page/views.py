@@ -17,6 +17,7 @@ from .models import Ingredient, recipe
 from .forms import IngredientForm
 from taggit.models import Tag
 from .forms import RecipeForm
+from django.db import transaction
 
 
 logger = logging.getLogger(__name__)
@@ -182,15 +183,33 @@ def add_recipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
 
-        logger.info(f"--- add_recipe")
+        logger.info("--- add_recipe")
         
         if form.is_valid():
-
-            form.save()
+            try:
+                with transaction.atomic():
+                    logger.debug(f"Form data before saving: {form.cleaned_data}")
+                    form.save()
+                    logger.info("Form data saved successfully.")
+            except Exception as e:
+                logger.error(f"Error saving form data: {str(e)}")
+                # Hier können Sie weitere Schritte unternehmen, um den Fehler zu behandeln,
+                # z. B. eine Fehlermeldung an den Benutzer anzeigen
+                
             
             return redirect('recipe_list')
+        else:
+            logger.error("form is invalid")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    logger.error(f"Field: {field}, Error: {error}")
     else:
         form = RecipeForm()
+        
+    # Log the content of the form, whether it's a GET or POST request
+    logger.info(f"Form data: {form.data}")
+    logger.info(f"Form files: {form.files}")
+    
     return render(request, 'pages/add_recipe.html', {'form': form})
 
 
