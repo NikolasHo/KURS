@@ -8,6 +8,7 @@ import classification.classification as classification
 import io
 import food.fwl as fwl
 import shutil
+import page.utils as utils 
 
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.http import JsonResponse
@@ -18,6 +19,8 @@ from .forms import IngredientForm
 from taggit.models import Tag
 from .forms import RecipeForm
 from django.db import transaction
+from datetime import datetime
+
 
 
 logger = logging.getLogger(__name__)
@@ -29,6 +32,7 @@ def base(request):
 
 def test(request):
     return render(request, 'pages/test.html', {})
+
 
 def ingredients_list(request):
     ingredients = Ingredient.objects.all()
@@ -122,16 +126,6 @@ def train_network(request):
         result = classification.train_classification_network()
     
         return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames,'success': result})
-
-#def train_network(request):
-
-#    result = classification.train_classification_network()
-    
-#    return HttpResponse(result)  # Hier wird eine HttpResponse-Instanz zurückgegeben
-
-
-
-
 
 
 # Classification of a new image
@@ -276,9 +270,6 @@ def recipe_detail(request, recipe_id):
     return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj, 'all_ingredients_available': all_ingredients_available})
 
 
-
-
-
 def folder_list(request):
     trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
     folders = os.listdir(trainset_path)
@@ -391,3 +382,80 @@ def suggested_recipes_keyword(request):
         recipes = fwl.find_recipes(ingredient)
         return render(request, 'pages/suggested_recipes.html', {'recipes': recipes})
     return redirect('ingredients_list')
+
+
+
+
+##### Settings   
+    
+    
+
+def settings_site(request):
+    
+    backup_list = utils.get_backups()
+    
+    # Die Liste mit Dateinamen und Datum an die HTML-Seite senden    
+    return render(request, 'pages/settings.html', {'backup_list': backup_list})
+
+
+def backup_database(request):
+    # Pfade für die Datenbank und das Backup-Verzeichnis.
+    database_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+    backup_directory = os.path.join(settings.BASE_DIR, 'backup')
+
+    # Erstellen Sie das Backup-Verzeichnis, wenn es nicht existiert.
+    os.makedirs(backup_directory, exist_ok=True)
+
+    # Aktuelles Datum und Uhrzeit erhalten
+    now = datetime.now()
+    current_date = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+
+    backup_file_name = f"db_backup_{current_date}.sqlite3"
+    backup_file_path = os.path.join(backup_directory, backup_file_name)
+
+
+    try:
+        # Datenbank-Backup durchführen.
+        shutil.copy2(database_path, backup_file_path)
+
+        # Erfolgreiche Antwort zurückgeben, wenn das Backup erfolgreich erstellt wurde.
+        # response = f"Database backup created successfully. File saved at: {backup_file_path}"
+        return redirect('settings_site')
+
+    except Exception as e:
+        # Fehlerantwort zurückgeben, wenn beim Backup ein Fehler aufgetreten ist.
+        error_msg = f"Error creating database backup: {e}"
+        return HttpResponse(error_msg, status=500)
+    
+    
+def delete_backup(request):
+    if request.method == 'POST':
+        backup_file = request.POST.get('backup_file')
+        backup_file_path = os.path.join(settings.BASE_DIR, 'backup', backup_file)
+
+        try:
+            # Backup-Datei löschen.
+            os.remove(backup_file_path)
+        except Exception as e:
+            # Fehlerantwort zurückgeben, wenn beim Löschen ein Fehler aufgetreten ist.
+            error_msg = f"Error deleting backup: {e}"
+            return HttpResponse(error_msg, status=500)
+
+    return redirect('settings_site')
+
+def restore_database(request):
+    if request.method == 'POST':
+        backup_file = request.POST.get('backup_file')
+        backup_file_path = os.path.join(settings.BASE_DIR, 'backup', backup_file)
+        database_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+
+        try:
+            # Original-Datenbank durch das Backup ersetzen.
+            shutil.copy2(backup_file_path, database_path)
+        except Exception as e:
+            # Fehlerantwort zurückgeben, wenn beim Ersetzen ein Fehler aufgetreten ist.
+            error_msg = f"Error replacing database: {e}"
+            return HttpResponse(error_msg, status=500)
+
+    return redirect('base')

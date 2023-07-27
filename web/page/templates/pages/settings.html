@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Backup and Restore</title>
+    <style>
+        li {
+            display: flex;
+            align-items: center;
+        }
+    
+        form {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Backup and Restore</h1>
+    <form method="post" action="/backup/">
+        {% csrf_token %}
+        <input type="submit" value="Backup Database">
+    </form>
+
+    <h2>Backup-Liste</h2>
+{% if backup_list %}
+<ul>
+    {% for backup_file, formatted_date in backup_list %}
+    <li>
+        {{ backup_file }} ({{ formatted_date }}) 
+        <form method="post" action="{% url 'delete_backup' %}">
+            {% csrf_token %}
+            <input type="hidden" name="backup_file" value="{{ backup_file }}">
+            <button type="submit">Löschen</button>
+        </form>
+        <form method="post" action="{% url 'restore_database' %}">
+            {% csrf_token %}
+            <input type="hidden" name="backup_file" value="{{ backup_file }}">
+            <button type="submit">Ersetzen</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Es sind keine Backups vorhanden.</p>
+{% endif %}
+
+    <h2>Restore Database</h2>
+    <form method="post" action="/restore/">
+        <label for="backup_file">Select Backup File:</label>
+        <input type="file" id="backup_file" name="backup_file" accept=".db">
+        <input type="submit" value="Restore Database">
+    </form>
+</body>
+</html>
+
+{% endblock %}
