@@ -4,7 +4,6 @@ django_taggit==4.0.0
 keras==2.12.0
 matplotlib==3.7.1
 numpy==1.23.5
-Pillow==9.5.0
 Pillow==10.0.0
 Requests==2.31.0
 tensorflow==2.12.0
