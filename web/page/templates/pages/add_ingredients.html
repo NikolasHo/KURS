@@ -26,7 +26,8 @@
       <input type="number" class="form-control" name="weight" id="id_weight" min="0" max="10000" value="0">
     </div>
     <div class="form-group">
-      <label for="tags">Tags</label>
+      <label>Tags</label>
+      <input type="text" data-role="tagsinput" class="form-control tagsinput" name="tags">
       <select id="tags" name="tags" multiple class="form-control">
         {% for tag in used_tags %}
           <option value="{{ tag.name }}">{{ tag.name }}</option>
