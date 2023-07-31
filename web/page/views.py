@@ -127,9 +127,12 @@ def classification_base(request):
   
 def train_network(request):
     if request.method == 'POST':
-        with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
-            AvailableClassNames = json.load(f)
         result = classification.train_classification_network()
+        if os.path.exists(classification_settings.CLASSIFICATION_CLASSES_FULLNAME):
+       
+            with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+                AvailableClassNames = json.load(f)
+        
     
         return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames,'success': result})
 
