@@ -3,7 +3,6 @@
 import os
 from datetime import datetime
 from django.conf import settings
-import logging
 
 
 

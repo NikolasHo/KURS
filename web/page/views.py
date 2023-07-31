@@ -113,10 +113,16 @@ def update_quantity(request, ingredient_id):
 # Entry point for classification
     # all stuff with the neuronal network and its traingings files
 def classification_base(request):
-    with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
-        AvailableClassNames = json.load(f)
+
+    # Überprüfen, ob der Ordner vorhanden ist
+    if os.path.exists(classification_settings.CLASSIFICATION_CLASSES_FULLNAME):
+       
+        with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+            AvailableClassNames = json.load(f)
+        
+        return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames})
   
-    return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames})
+    return render(request, 'pages/classification.html')
   
   
 def train_network(request):
@@ -272,6 +278,10 @@ def recipe_detail(request, recipe_id):
 
 def folder_list(request):
     trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
+    if not os.path.exists(trainset_path):
+        # Verzeichnis anlegen, wenn es nicht vorhanden ist
+        os.makedirs(trainset_path)
+    
     folders = os.listdir(trainset_path)
     folder_data = []
     

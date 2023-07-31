@@ -1,7 +1,5 @@
 import os
 from pathlib import Path
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
 from keras.models import load_model
 import tensorflow as tf
 import numpy as np
@@ -13,12 +11,6 @@ import matplotlib.pyplot as plt
 
 batch_size = 32
 
-def open_file():
-    Tk().withdraw()  # Versteckt das Hauptfenster des Tkinter-Fensters
-    filename = askopenfilename()  # Öffnet den Dateiauswahldialog
-    if filename:
-        with open(filename, 'r') as file:
-            return filename
 
 def classify_image(image):
     img_height = 256
@@ -185,8 +177,3 @@ def classify_image_8(image):
     return filtered_results
 
 #### Main
-
-#testfile = open_file()
-#print(testfile)
-
-#classify_image(testfile)
