@@ -20,7 +20,7 @@ from taggit.models import Tag
 from .forms import RecipeForm
 from django.db import transaction
 from datetime import datetime
-
+from .forms import ImageUploadForm
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,18 @@ logger = logging.getLogger(__name__)
 def base(request):
     return render(request, 'base.html', {})
 
+
+
+
 def test(request):
+    if request.method == 'POST':
+        form = ImageUploadForm(request.POST, request.FILES)
+        logging.info("test")
+        if form.is_valid():
+            image = form.cleaned_data['img']
+            extracted_text = classify.read_text_from_image(image)  # Extrahieren Sie den Text aus dem Bild
+            logging.info(extracted_text)
+            return render(request, 'pages/test.html', {'text_array': extracted_text})
     return render(request, 'pages/test.html', {})
 
 

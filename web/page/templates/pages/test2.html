@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Raster mit 8 Rechtecken - Bring App Design</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr); /* 4 Spalten pro Zeile */
+      grid-template-rows: repeat(2, 50px); /* 2 Zeilen */
+      grid-gap: 10px; /* Abstand zwischen den Rechtecken */
+      justify-items: center; /* Zentriert den Inhalt horizontal in jeder Zelle */
+      align-items: center; /* Zentriert den Inhalt vertikal in jeder Zelle */
+      max-width: 300px; /* Maximale Breite des Rasters */
+      margin: 0 auto; /* Zentriert das Raster horizontal auf der Seite */
+    }
+
+    .grid-item {
+      cursor: pointer; /* Zeigt einen Zeiger-Cursor an, um anzudeuten, dass das Rechteck anklickbar ist */
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+  <script>
+    function hideRectangle(element) {
+      element.style.display = 'none';
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="grid-container">
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 1</div>
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 2</div>
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 3</div>
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 4</div>
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 5</div>
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 6</div>
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 7</div>
+      <div class="grid-item" onclick="hideRectangle(this)">Rechteck 8</div>
+    </div>
+  </div>
+</body>
+
+
+</html>

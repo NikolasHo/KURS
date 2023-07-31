@@ -27,11 +27,11 @@ install_packages() {
         echo "Requirements wurden bereits installiert."
     else
         echo "Installiere Requirements..."
-        pip install django
-        pip install tensorflow
-        sudo apt-get install python3-tk
-        pip install -r requirements.txt
-        
+        sudo apt-get update
+        sudo apt-get install tesseract-ocr
+
+        pip install -r requirements_arm.txt
+
         echo "Requirements wurden erfolgreich installiert."
     fi
 }

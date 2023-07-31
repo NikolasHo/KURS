@@ -10,8 +10,6 @@ class IngredientForm(forms.ModelForm):
         fields = '__all__'
 
 
-    
-
 class RecipeForm(forms.Form):
     recipe_name = forms.CharField(label='Rezeptname', max_length=100)
     recipe_description = forms.CharField(label='Beschreibung', widget=forms.Textarea)
@@ -70,3 +68,5 @@ class RecipeForm(forms.Form):
 
         return recipe_data
 
+class ImageUploadForm(forms.Form):
+    img = forms.ImageField()

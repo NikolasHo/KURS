@@ -7,6 +7,10 @@ import json
 import classification.classification_settings as classification_settings
 import matplotlib.pyplot as plt
 
+import pytesseract
+from PIL import Image
+
+
 ## Main
 
 batch_size = 32
@@ -69,22 +73,6 @@ def preprocess_image(image_path, target_size):
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
-def predict_objects(image_array, model, class_names):
-    predictions = model.predict(image_array)
-    scores = tf.nn.softmax(predictions[0])
-
-    results = []
-    for i in range(len(class_names)):
-        class_name = class_names[i]
-        confidence = 100 * scores[i]
-        result = {
-            'class_name': class_name,
-            'confidence': confidence
-        }
-        results.append(result)
-
-    return results
-
 def classify_image_4(image):
 
     img_height_var = 512
@@ -135,45 +123,20 @@ def classify_image_4(image):
 
     return final_results
 
-def classify_image_8(image):
+##### OCR ######
 
-    img_height_var = 1024
-    img_width_var = 1024
 
-    # load trained model
-    model = load_model(classification_settings.CLASSIFICATION_MODEL_FULLNAME)
+def read_text_from_image(image_path):
+    # Laden Sie das Bild mit PIL (Python Imaging Library)
+    image = Image.open(image_path)
 
-    # load classes from file
-    with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
-        loaded_class_names = json.load(f)
+    # Verwenden Sie pytesseract, um den Text aus dem Bild zu extrahieren
+    extracted_text = pytesseract.image_to_string(image, lang='deu')  # 'deu' für die deutsche Sprache
 
-    # Das Bild in 4 Teile aufteilen
-    #image = preprocess_image(testfile, target_size=(img_height_var, img_width_var))
-    part_height = img_height_var // 4
-    part_width = img_width_var // 4
+    # Teilen Sie den extrahierten Text in Zeilen auf
+    lines = extracted_text.strip().split('\n')
 
-    parts = []
-    for i in range(4):
-        for j in range(4):
-            part = image[:, i * part_height:(i + 1) * part_height, j * part_width:(j + 1) * part_width, :]
-            parts.append(part)
+    # Optional: Entfernen Sie leere Zeilen und führende/abschließende Leerzeichen
+    lines = [line.strip() for line in lines if line.strip()]
 
-    # Objekterkennung für jedes Teil durchführen
-    results = []
-    for part in enumerate(parts):
-        part_results = predict_objects(part, model, loaded_class_names)
-        results.extend(part_results)
-
-    # Ergebnisse filtern
-    filtered_results = [result for result in results if result['class_name'] in loaded_class_names]
-
-    # Ergebnisse ausgeben
-    if len(filtered_results) > 0:
-        for result in filtered_results:
-            print("Objekt: {}, Vertrauen: {:.2f}%".format(result['class_name'], result['confidence']))
-    else:
-        print("Nix gefunden")
-
-    return filtered_results
-
-#### Main
+    return lines
