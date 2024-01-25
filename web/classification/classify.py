@@ -4,7 +4,7 @@ from keras.models import load_model
 import tensorflow as tf
 import numpy as np
 import json
-import classification.classification_settings as classification_settings
+import classification.classificationSettings as classificationSettings
 import matplotlib.pyplot as plt
 
 ## Main
@@ -23,30 +23,30 @@ def classify_image(image):
     img_array = tf.keras.utils.img_to_array(img)
     img_array = tf.expand_dims(img_array, 0) # Create a batch
 
-    tmp_img = os.path.join(classification_settings.CLASSIFICATION_FILES_TMP, "akdmasdad.jpg")
+    tmp_img = os.path.join(classificationSettings.CLASSIFICATION_FILES_TMP, "akdmasdad.jpg")
 
     print("Das ist der Pfad")
-    print(classification_settings.CLASSIFICATION_FILES_TMP)
+    print(classificationSettings.CLASSIFICATION_FILES_TMP)
 
-    if os.path.exists(classification_settings.CLASSIFICATION_FILES_TMP):
+    if os.path.exists(classificationSettings.CLASSIFICATION_FILES_TMP):
         # Ordner löschen
         os.remove(tmp_img)
-        os.rmdir(classification_settings.CLASSIFICATION_FILES_TMP)
+        os.rmdir(classificationSettings.CLASSIFICATION_FILES_TMP)
 
     # Ordner erstellen
-    os.makedirs(classification_settings.CLASSIFICATION_FILES_TMP, exist_ok=True)
+    os.makedirs(classificationSettings.CLASSIFICATION_FILES_TMP, exist_ok=True)
 
     # Bild im BGR-Format speichern
     tf.keras.preprocessing.image.save_img(tmp_img, img_array[0])
 
     # load trained model
-    model = load_model(classification_settings.CLASSIFICATION_MODEL_FULLNAME)
+    model = load_model(classificationSettings.CLASSIFICATION_MODEL_FULLNAME)
 
     predictions = model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
 
     # load classes from file
-    with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+    with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
         loaded_class_names = json.load(f)
 
     print(
@@ -91,10 +91,10 @@ def classify_image_4(image):
     img_width_var = 512
 
     # load trained model
-    model = load_model(classification_settings.CLASSIFICATION_MODEL_FULLNAME)
+    model = load_model(classificationSettings.CLASSIFICATION_MODEL_FULLNAME)
 
     # load classes from file
-    with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+    with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
         loaded_class_names = json.load(f)
 
     # Das Bild in 4 Teile aufteilen
@@ -141,10 +141,10 @@ def classify_image_8(image):
     img_width_var = 1024
 
     # load trained model
-    model = load_model(classification_settings.CLASSIFICATION_MODEL_FULLNAME)
+    model = load_model(classificationSettings.CLASSIFICATION_MODEL_FULLNAME)
 
     # load classes from file
-    with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+    with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
         loaded_class_names = json.load(f)
 
     # Das Bild in 4 Teile aufteilen

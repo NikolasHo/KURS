@@ -2,7 +2,7 @@
 import json
 import logging
 import os
-import classification.classification_settings as classification_settings
+import classification.classificationSettings as classificationSettings
 import classification.classify as classify
 import classification.classification as classification
 import io
@@ -115,9 +115,9 @@ def update_quantity(request, ingredient_id):
 def classification_base(request):
 
     # Überprüfen, ob der Ordner vorhanden ist
-    if os.path.exists(classification_settings.CLASSIFICATION_CLASSES_FULLNAME):
+    if os.path.exists(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME):
        
-        with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+        with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
             AvailableClassNames = json.load(f)
         
         return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames})
@@ -128,9 +128,9 @@ def classification_base(request):
 def train_network(request):
     if request.method == 'POST':
         result = classification.train_classification_network()
-        if os.path.exists(classification_settings.CLASSIFICATION_CLASSES_FULLNAME):
+        if os.path.exists(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME):
        
-            with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
+            with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
                 AvailableClassNames = json.load(f)
         
     

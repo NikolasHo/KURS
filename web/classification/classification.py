@@ -5,7 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import pathlib
 import json
-import classification.classification_settings as classification_settings
+import classification.classificationSettings as classificationSettings
 
 from tensorflow import keras
 from keras import layers
@@ -29,7 +29,7 @@ def train_classification_network():
 
 
   # How many images are available:
-  training_dir = pathlib.Path(classification_settings.CLASSIFICATION_FILES)
+  training_dir = pathlib.Path(classificationSettings.CLASSIFICATION_FILES)
   image_count = len(list(training_dir.glob('*/*.jpeg')))
   print(image_count)
 
@@ -52,12 +52,12 @@ def train_classification_network():
 
   class_names = train_ds.class_names
   print(class_names)
-  with open(classification_settings.CLASSIFICATION_CLASSES_FULLNAME, 'w') as f:
+  with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'w') as f:
       json.dump(class_names, f)
 
 
-  if not os.path.exists(classification_settings.CLASSIFICATION_TRAINED_FILES_TMP):
-      os.makedirs(classification_settings.CLASSIFICATION_TRAINED_FILES_TMP)
+  if not os.path.exists(classificationSettings.CLASSIFICATION_TRAINED_FILES_TMP):
+      os.makedirs(classificationSettings.CLASSIFICATION_TRAINED_FILES_TMP)
 
   # Speichern jedes Bildes aus dem train_ds-Datensatz
   for i, (images, labels) in enumerate(train_ds.take(1)):
@@ -67,7 +67,7 @@ def train_classification_network():
 
           # Pfad zum Speichern des Bildes erstellen
           filename = f"{label}_{i * len(images) + j}.jpg"
-          filepath = os.path.join(classification_settings.CLASSIFICATION_TRAINED_FILES_TMP, filename)
+          filepath = os.path.join(classificationSettings.CLASSIFICATION_TRAINED_FILES_TMP, filename)
 
           # Bild speichern
           plt.imsave(filepath, image)
@@ -127,7 +127,7 @@ def train_classification_network():
       epochs=epochs
     )
 
-    save_model(model, classification_settings.CLASSIFICATION_MODEL_FULLNAME)
+    save_model(model, classificationSettings.CLASSIFICATION_MODEL_FULLNAME)
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
 
