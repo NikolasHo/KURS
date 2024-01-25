@@ -1,5 +1,5 @@
 venv/
-web/logs
+web/logs/debug.log
 web/media/
 web/cert.pem
 web/key.pem
