@@ -7,3 +7,4 @@ web/db.sqlite3
 web/classification/trainsets
 web/classification/manuelltest
 **/__pycache__/*
+pyvenv.cfg
