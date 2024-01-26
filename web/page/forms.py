@@ -21,13 +21,11 @@ class RecipeForm(forms.Form):
     ingredient_quantity = forms.CharField(label='Anzahl', widget=forms.Textarea)
     ingredient_weight = forms.CharField(label='Gewicht', widget=forms.Textarea)
     
-    
     step_headline = forms.CharField(label='Schritt', widget=forms.Textarea)
     step_description = forms.CharField(label='Beschreibung', widget=forms.Textarea)
     step_img = forms.ImageField(label='Bild für jeden Schritt', required=False)
 
     def save(self):
-        # Speichern Sie das Rezept hier entsprechend Ihrer Logik
         recipe_data = recipe.objects.create(
             headline=self.cleaned_data['recipe_name'],
             description=self.cleaned_data['recipe_description'],

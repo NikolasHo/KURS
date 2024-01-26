@@ -12,7 +12,7 @@ urlpatterns = [
    # path('ingredients/add_multi/', views.add_multi_ingredients, name='add_multi_ingredients'),
     path('update_quantity/<int:ingredient_id>/', views.update_quantity, name='update_quantity'),
     
-    #Recpides
+    #Recepies
     path('recipe/add', views.add_recipe, name='add_recipe'),
     path('recipe', views.recipe_list, name='recipe_list'),
     path('recipe/delete/<int:recipe_id>/', views.delete_recipe, name='delete_recipe'),
@@ -22,7 +22,7 @@ urlpatterns = [
     path('suggestedrecipeskeyword/', views.suggested_recipes_keyword, name='suggested_recipes_keyword'),
     
     
-    #MAIN
+    #Main
     path('', views.base, name='base'),
     
     #KI
