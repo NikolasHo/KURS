@@ -43,5 +43,11 @@ urlpatterns = [
     path('backup/', views.backup_database, name='backup_database'),
     path('backup_restore/', views.restore_database, name='restore_database'),
     path('backup_delete/', views.delete_backup, name='delete_backup'),
-   
+
+
+    #Bills
+    path('bills/', views.bills_list, name='bills_list'),
+    path('bills/add/', views.add_bills, name='add_bills'),
+    path('bills/delete/', views.delete_bill, name='delete_bill'),
+    path('bills/convert/', views.convert_bill, name='convert_bill'),
 ]

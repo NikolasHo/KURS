@@ -14,8 +14,8 @@ from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
-from .models import Ingredient, recipe
-from .forms import IngredientForm
+from .models import Ingredient, recipe, bills
+from .forms import IngredientForm, bills_form
 from taggit.models import Tag
 from .forms import RecipeForm
 from django.db import transaction
@@ -472,3 +472,60 @@ def restore_database(request):
             return HttpResponse(error_msg, status=500)
 
     return redirect('base')
+
+#### Bills
+
+# List of all bills in data base
+def bills_list(request):
+    bills_list = bills.objects.all()
+    print("Add bill", bills_list)
+    return render(request, 'pages/bills_list.html', {'bills_list': bills_list})
+
+
+# Form to add a new ingredient
+def add_bills(request):
+    if request.method == 'POST':
+        form = bills_form(request.POST, request.FILES)
+
+        if form.is_valid():
+            instance = form.save()
+        
+            print("Add bill")
+
+            # add current date to form 
+            print("Add current Date: ", instance.date)
+
+
+            return redirect('bills_list')
+    else:
+        form = bills_form()
+
+    return render(request, 'pages/add_bills.html', {'form': form})
+
+# delete a bill from the database
+def delete_bill(request):
+    
+    if request.method == 'POST':
+        bill_id = request.POST.get('bill') 
+        logger.info("Bill id:" , bill_id)
+        bill_obj = get_object_or_404(bills, id=bill_id)
+        bill_obj.delete()
+        return redirect('bills_list') 
+    
+    return redirect('bills_list') 
+
+# convert a bill into ingredients
+def convert_bill(request):
+    
+    if request.method == 'POST':
+        bill_id = request.POST.get('bill') 
+        logger.info("Bill id:" , bill_id)
+        bill_obj = get_object_or_404(bills, id=bill_id)
+        
+
+        # TBD
+
+
+        return redirect('bills_list') 
+    
+    return redirect('bills_list') 

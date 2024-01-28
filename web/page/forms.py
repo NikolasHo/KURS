@@ -1,5 +1,5 @@
 from django import forms
-from .models import Ingredient, recipe_step, recipe
+from .models import Ingredient, recipe_step, recipe, bills
 import logging
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,11 @@ class RecipeForm(forms.Form):
             step.save()
             recipe_data.recipe_steps.add(step)
 
-
-
         return recipe_data
 
+# Form for bills to add to data base
+
+class bills_form(forms.ModelForm):
+    class Meta:
+        model = bills
+        fields = '__all__'

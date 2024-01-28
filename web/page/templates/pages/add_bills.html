@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Add a bill</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="id_bill_img">Bild</label>
+      <input type="file" class="form-control-file" accept="image/*" capture="camera" name="bill_img" id="id_bill_img" required>
+    </div>
+    <div class="form-group">
+      <label for="id_description">Description</label>
+      <input type="text" name="description" class="form-control" id="id_description" required>
+    </div>
+
+    <div class="form-group">
+      <label for="id_date">Date</label>
+      <input type="date" class="form-control" name="date" id="id_date" required>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">add bill</button>
+  </form>
+</div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+    <script>
+
+        // get the csrf token from cookies
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Überprüfe, ob der Cookie den Namen 'csrftoken' hat
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

@@ -9,6 +9,60 @@
 </head>
 <body>
 
+    <div class="container">
+        <div class="row">
+            {% for bill in bills_list %}
+                <div class="col-md-6 card-column">    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">{{ bill.description }}</h5>
+                        </div>
+                        <img src="{{ bill.bill_img.url }}" class="card-img-top" alt="{{ bill.description }}">
+                            
+                        <div class="card-body">
+                            <p>Beschreibung: {{ bill.description }}</p>
+                            <p>Datum: {{ bill.date }}</p>
+                            <div class="btn-group btn-group-toggle btn-block" data-toggle="buttons">
+                                <form method="POST" action="{% url 'convert_bill' %}">
+                                    {% csrf_token %}
+                                    <!-- Hier kommen Ihre vorhandenen Button-Codes -->
+                                    <input type="hidden" name="bill" value="{{ bill.description }}">
+                                    <button type="submit" class="btn btn-success">Convert</button>
+                                </form>
+                                <form method="POST" action="{% url 'delete_bill' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="bill" value="{{ bill.id }}">
+                                    <button type="submit" class="btn btn-success">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+            <li>Keine Rechnungen vorhanden.</li>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <!-- Button to add -->
+    <div class="card-container">
+        <div class="card custom-card">
+            <div class="card-header">
+                <h5 class="card-title">Add new bill</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <button class="btn btn-primary btn-lg add-button" style="width: 100%;" onclick="navigateToAddPage()">
+                    <i class="fas fa-plus">+</i>
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+<script>
+    function navigateToAddPage() {
+        window.location.href = 'add/';
+    }
+</script>
 {% endblock %}

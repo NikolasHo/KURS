@@ -46,3 +46,9 @@ class recipe(models.Model):
     description = models.TextField(default="")
     recipe_steps = models.ManyToManyField(recipe_step)
     ingredients = models.ManyToManyField(Ingredient)
+
+# Bills
+class bills(models.Model):
+    bill_img = models.ImageField(upload_to=upload_image, blank=True, null=True)
+    description = models.TextField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
