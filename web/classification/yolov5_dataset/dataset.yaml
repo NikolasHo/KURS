@@ -1,0 +1,10 @@
+names:
+- Tomate
+- Zwiebel
+- Paprika
+- Gurke
+- Kartoffel
+- Cola
+nc: 6
+train: images/train
+val: images/val

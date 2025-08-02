@@ -25,7 +25,7 @@ python manage.py migrate
 
 #echo "Superuser kann jetzt erstellt werden (optional)..."
 #python manage.py createsuperuser
-python manage.py runserver
+python manage.py runserver 5468
 
 
 echo "Fertig! Starte den Server mit:"

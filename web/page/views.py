@@ -9,9 +9,12 @@ import io
 import food.fwl as fwl
 import shutil
 import page.utils as utils 
+import random
+import uuid
+import yaml
 
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
-from django.http import JsonResponse
+from django.http import HttpResponseServerError, JsonResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
 from .models import Ingredient, recipe
@@ -472,3 +475,107 @@ def restore_database(request):
             return HttpResponse(error_msg, status=500)
 
     return redirect('base')
+
+
+
+
+### New KI
+
+# Pfad zur Dataset-Konfiguration
+DATASET_CONFIG = os.path.join(
+    settings.BASE_DIR,
+    'classification',
+    'yolov5_dataset',
+    'dataset.yaml'
+)
+DATASET_ROOT = os.path.join(
+    settings.BASE_DIR,
+    'classification',
+    'yolov5_dataset'
+)
+
+def load_class_names():
+    """
+    Liest die Klassennamen aus der dataset.yaml
+    und gibt sie als Liste zurück.
+    """
+    with open(DATASET_CONFIG, 'r') as f:
+        cfg = yaml.safe_load(f)
+    return cfg.get('names', [])
+
+def save_class_names(names):
+    """
+    Speichert die aktualisierte list der Klassennamen in dataset.yaml,
+    aktualisiert 'nc' entsprechend.
+    """
+    data = {
+        'train': 'images/train',
+        'val': 'images/val',
+        'nc': len(names),
+        'names': names
+    }
+    with open(DATASET_CONFIG, 'w') as f:
+        yaml.dump(data, f)
+
+def add_class_name(request):
+    """
+    HAndelt das Hinzufügen einer neuen Klasse über das Web-Formular.
+    """
+    if request.method == 'POST':
+        new_name = request.POST.get('new_class_name', '').strip()
+        if not new_name:
+            return HttpResponseServerError('Kein Klassenname angegeben.')
+        names = load_class_names()
+        if new_name in names:
+            return HttpResponseServerError('Klasse existiert bereits.')
+        names.append(new_name)
+        save_class_names(names)
+        return redirect('upload_training_image')
+    return redirect('upload_training_image')
+
+def upload_training_image(request):
+    # Klassenliste dynamisch laden
+    class_names = load_class_names()
+
+    if request.method == 'POST':
+        # Ausgewählte Klasse und Dateien auslesen
+        class_id = int(request.POST['class_name'])
+        class_name = class_names[class_id]
+        images = request.FILES.getlist('images')
+
+        for img in images:
+            # Zufälliges Split: 20 % Val, 80 % Train
+            subset = 'val' if random.random() < 0.2 else 'train'
+
+            # Ziel-Ordner erstellen
+            img_dir = os.path.join(DATASET_ROOT, 'images', subset)
+            os.makedirs(img_dir, exist_ok=True)
+
+            # Eindeutigen Dateinamen generieren
+            ext = os.path.splitext(img.name)[1]
+            filename = f"{class_name}_{uuid.uuid4().hex}{ext}"
+
+            # Bild speichern
+            img_path = os.path.join(img_dir, filename)
+            with open(img_path, 'wb+') as f:
+                for chunk in img.chunks():
+                    f.write(chunk)
+
+            # YOLO-Label (ganze Bildfläche)
+            lbl_dir = os.path.join(DATASET_ROOT, 'labels', subset)
+            os.makedirs(lbl_dir, exist_ok=True)
+            lbl_path = os.path.join(lbl_dir, f"{os.path.splitext(filename)[0]}.txt")
+            with open(lbl_path, 'w') as f:
+                # class_id x_center y_center width height
+                # ganze Bildfläche annotieren: x_center=0.5, y_center=0.5, width=1.0, height=1.0
+                f.write(f"{class_id} 0.5 0.5 1.0 1.0\n")
+
+        # Nach Upload wieder zurück zur Upload-Seite
+        return redirect('upload_training_image')
+
+    # GET: Formular anzeigen mit dynamischen Klassen
+    return render(
+        request,
+        'pages/upload_training.html',
+        {'class_names': load_class_names()}
+    )

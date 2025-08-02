@@ -7,3 +7,5 @@ numpy==1.23.5
 Pillow==10.0.0
 Requests==2.31.0
 tensorflow==2.12.0
+tensorflow_intel==2.12.0
+PyYAML==6.0.1

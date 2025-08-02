@@ -33,7 +33,9 @@ urlpatterns = [
     path('train_network/', views.train_network, name='train_network'),
     path('image_classification/', views.image_classification, name='image_classification'),
     path('classification/', views.classification_base, name='classification'),
-    
+    path('upload_training/', views.upload_training_image, name='upload_training_image'),
+    path('add-class/', views.add_class_name, name='add_class_name'),
+
     #Dev
     path('test/', views.test, name='test'),
     

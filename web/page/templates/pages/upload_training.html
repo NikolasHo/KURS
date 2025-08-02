@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Bilder für YOLO-Training hochladen</h1>
+
+
+  <h2>Neue Klasse anlegen</h2>
+  <form method="post" action="{% url 'add_class_name' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="new_class_name">Klassenname</label>
+      <input type="text" name="new_class_name" id="new_class_name" class="form-control" placeholder="Zutatename hinzufügen" required>
+    </div>
+    <button type="submit" class="btn btn-secondary">Klasse anlegen</button>
+  </form>
+  <hr>
+  
+<form method="post" enctype="multipart/form-data" action="{% url 'upload_training_image' %}">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="class_name">Klasse</label>
+    <select name="class_name" id="class_name" class="form-control">
+      {% for class in class_names %}
+        <option value="{{ forloop.counter0 }}">{{ class }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="images">Bilder auswählen</label>
+    <input type="file" name="images" id="images" multiple class="form-control-file" accept="image/*">
+  </div>
+  <button type="submit" class="btn btn-primary">Hochladen</button>
+</form>
+{% endblock %}
