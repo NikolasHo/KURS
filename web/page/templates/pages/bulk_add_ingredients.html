@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Bulk-Zutaten-Erkennung</h1>
+  <form id="detect-form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="detect_img">Foto aufnehmen / wählen</label>
+      <input type="file" class="form-control-file" accept="image/*" capture="camera" name="image" id="detect_img" required>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-detect">Erkennen</button>
+  </form>
+
+  <form id="bulk-save-form" method="post" action="{% url 'bulk_save_ingredients' %}">
+    {% csrf_token %}
+    <div id="detected-list" class="mt-4"></div>
+    <button type="submit" class="btn btn-success mt-3" style="display:none;" id="btn-save">Zutaten speichern</button>
+  </form>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+document.getElementById('btn-detect').addEventListener('click', () => {
+  const form = document.getElementById('detect-form');
+  const data = new FormData(form);
+  fetch('{% url "detect_and_list" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    body: data
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      alert('Fehler: ' + (data.error || '')); return;
+    }
+    const listDiv = document.getElementById('detected-list');
+    listDiv.innerHTML = '';
+    data.items.forEach((item, idx) => {
+      const html = `
+      <div class="card mb-2">
+        <div class="card-body">
+          <h5 class="card-title">${item.class}</h5>
+          <input type="hidden" name="items[${idx}].description" value="${item.class}">
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label>MHD</label>
+              <input type="date" name="items[${idx}].mhd" class="form-control">
+            </div>
+            <div class="form-group col-md-2">
+              <label>Anzahl</label>
+              <input type="number" name="items[${idx}].quantity" class="form-control" value="${item.count}" min="1">
+            </div>
+            <div class="form-group col-md-2">
+              <label>Gewicht (g)</label>
+              <input type="number" name="items[${idx}].weight" class="form-control" value="0" min="0">
+            </div>
+            <div class="form-group col-md-5">
+              <label>Tags (Komma-separiert)</label>
+              <input type="text" name="items[${idx}].tags" class="form-control" placeholder="z.B. Bio,Frisch">
+            </div>
+          </div>
+        </div>
+      </div>`;
+      listDiv.insertAdjacentHTML('beforeend', html);
+    });
+    document.getElementById('btn-save').style.display = 'inline-block';
+  });
+});
+</script>
+

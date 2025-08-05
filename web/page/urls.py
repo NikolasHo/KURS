@@ -35,6 +35,11 @@ urlpatterns = [
     path('classification/', views.classification_base, name='classification'),
     path('upload_training/', views.upload_training_image, name='upload_training_image'),
     path('add-class/', views.add_class_name, name='add_class_name'),
+    path('train-model/', views.train_model, name='train_model'),
+    path('bulk-add/', views.bulk_add_ingredients, name='bulk_add_ingredients'),
+    path('detect-list/', views.detect_and_list, name='detect_and_list'),
+    path('bulk-save/', views.bulk_save_ingredients, name='bulk_save_ingredients'),
+    path('test-detect/', views.test_detection, name='test_detection'),
 
     #Dev
     path('test/', views.test, name='test'),

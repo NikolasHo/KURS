@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Detection testen</h1>
+  <form id="test-form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="test_img">Bild wählen</label>
+      <input type="file" id="test_img" name="image" accept="image/*" class="form-control-file" required>
+    </div>
+    <button type="button" id="btn-test" class="btn btn-primary">Erkennung starten</button>
+  </form>
+  <hr>
+  <h3>Ergebnisse</h3>
+  <pre id="test-results" style="background:#f8f9fa; padding:1rem; border-radius:5px;"></pre>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    document.cookie.split(';').forEach(c => {
+      c = c.trim(); if (c.startsWith(name + '=')) cookieValue = decodeURIComponent(c.substring(name.length+1));
+    });
+  }
+  return cookieValue;
+}
+
+document.getElementById('btn-test').addEventListener('click', () => {
+  const input = document.getElementById('test_img');
+  if (!input.files.length) return;
+  const fd = new FormData();
+  fd.append('image', input.files[0]);
+  fetch('{% url "test_detection" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    body: fd
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('test-results').textContent = JSON.stringify(data, null, 2);
+  })
+  .catch(err => { document.getElementById('test-results').textContent = 'Fehler: '+err; });
+});
+</script>
+
+{% endblock %}

@@ -5,6 +5,8 @@ web/cert.pem
 web/key.pem
 web/db.sqlite3
 web/classification/trainsets
+web/classification/yolov5_dataset/
 web/classification/manuelltest
 **/__pycache__/*
 pyvenv.cfg
+runs/

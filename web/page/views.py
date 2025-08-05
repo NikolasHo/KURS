@@ -13,6 +13,7 @@ import random
 import uuid
 import yaml
 
+
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.http import HttpResponseServerError, JsonResponse
 from django.conf import settings
@@ -23,6 +24,8 @@ from taggit.models import Tag
 from .forms import RecipeForm
 from django.db import transaction
 from datetime import datetime
+from ultralytics import YOLO
+from classification.detection import detect_ingredients
 
 
 
@@ -579,3 +582,141 @@ def upload_training_image(request):
         'pages/upload_training.html',
         {'class_names': load_class_names()}
     )
+
+model_weights = 'yolov5s.pt'
+
+
+def train_model(request):
+    if request.method == 'POST':
+        # Hyperparameter aus Formular
+        try:
+            epochs = int(request.POST.get('epochs', 50))
+            imgsz = int(request.POST.get('imgsz', 640))
+        except ValueError:
+            return HttpResponseServerError('Ungültige Parameter.')
+
+        # YOLO-Train aufrufen
+        try:
+            model = YOLO(model_weights)
+            model.train(
+                data=DATASET_CONFIG,
+                epochs=epochs,
+                imgsz=imgsz,
+                project=os.path.join(settings.BASE_DIR, 'runs'),
+                name='web-training',
+            )
+        except Exception as e:
+            return HttpResponseServerError(f'Training fehlgeschlagen: {e}')
+
+        return JsonResponse({'success': True, 'message': 'Training abgeschlossen.'})
+    # GET: Formular anzeigen
+    return render(request, 'pages/train_model.html')
+
+
+
+
+def detect_and_add(request):
+    if 'image' not in request.FILES:
+        return JsonResponse({'success': False, 'error': 'Kein Bild gesendet.'}, status=400)
+
+    dets = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
+    if not dets:
+        return JsonResponse({'success': False, 'error': 'Kein Modell verfügbar oder keine Erkennung.'})
+
+    added, updated = [], []
+    counts = {}
+    for d in dets:
+        desc = d['class']
+        counts[desc] = counts.get(desc, 0) + 1
+
+    for desc, cnt in counts.items():
+        obj, created = Ingredient.objects.get_or_create(
+            description=desc,
+            part_of_recipe=False,
+            defaults={'quantity': cnt, 'weight': 0}
+        )
+        if created:
+            added.append(desc)
+        else:
+            obj.quantity += cnt
+            obj.save()
+            updated.append(desc)
+
+    return JsonResponse({'success': True, 'added': added, 'updated': updated})
+
+def bulk_add_ingredients(request):
+    # GET: Bulk-Erkennungsseite
+    return render(request, 'pages/bulk_add_ingredients.html')
+
+
+def detect_and_list(request):
+    if 'image' not in request.FILES:
+        return JsonResponse({'success': False, 'error': 'Kein Bild.'}, status=400)
+    # Inferenz durchführen
+    detections = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
+    # Klassen zählen
+    counts = {}
+    for det in detections:
+        cls = det['class']
+        counts[cls] = counts.get(cls, 0) + 1
+    # In Liste umwandeln
+    items = [{'class': cls, 'count': count} for cls, count in counts.items()]
+    return JsonResponse({'success': True, 'items': items})
+
+def bulk_save_ingredients(request):
+    # Parsen der POST-Felder items[i].<field>
+    pattern = re.compile(r'^items\[(\d+)\]\.(\w+)$')
+    temp = {}
+    for key, vals in request.POST.lists():
+        m = pattern.match(key)
+        if not m:
+            continue
+        idx = int(m.group(1))
+        field = m.group(2)
+        value = vals[0]
+        temp.setdefault(idx, {})[field] = value
+
+    added, updated = [], []
+    # Daten validieren und speichern
+    for idx in sorted(temp.keys()):
+        data = temp[idx]
+        desc = data.get('description')
+        if not desc:
+            continue
+        mhd = data.get('mhd') or None
+        quantity = int(data.get('quantity', 1))
+        weight = float(data.get('weight', 0))
+        tags = [t.strip() for t in data.get('tags', '').split(',') if t.strip()]
+
+        obj, created = Ingredient.objects.get_or_create(
+            description=desc,
+            part_of_recipe=False,
+            defaults={'quantity': quantity, 'weight': weight, 'mhd': mhd}
+        )
+        if created:
+            if hasattr(obj, 'tags'):
+                obj.tags.set(tags)
+            added.append(desc)
+        else:
+            obj.quantity += quantity
+            if weight:
+                obj.weight = weight
+            obj.save()
+            updated.append(desc)
+
+    return JsonResponse({'success': True, 'added': added, 'updated': updated})
+
+
+def test_detection(request):
+    """
+    GET: Rendert die Testseite für Objekterkennung.
+    POST: Führt Detection durch und liefert JSON mit den Ergebnissen.
+    """
+    if request.method == 'POST':
+        if 'image' not in request.FILES:
+            return JsonResponse({'success': False, 'error': 'Kein Bild.'}, status=400)
+        detections = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
+        # Ergebnis direkt als JSON zurückgeben
+        return JsonResponse({'success': True, 'detections': detections})
+    # GET: Seite rendern
+    return render(request, 'pages/test_detection.html')
