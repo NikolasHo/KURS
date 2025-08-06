@@ -1,4 +1,5 @@
-import io, os
+import io
+import os
 from PIL import Image
 from django.conf import settings
 
@@ -11,35 +12,35 @@ except ImportError:
 
 
 def detect_ingredients(image_file, conf_threshold=0.5):
-    print("Starte Objekterkennung...")
+    print("Starting object detection...")
 
-    print(f"Modell geladen: {MODEL_PATH}") if model else print(f"Modell konnte nicht geladen werden. {MODEL_PATH}")
-   
-    if model is None:
-        print("Kein Modell geladen.")
+    if model:
+        print(f"Model loaded from: {MODEL_PATH}")
+    else:
+        print(f"Model could not be loaded. Expected at: {MODEL_PATH}")
+        print("No model loaded.")
         return []
 
-    print("Modell erkannt, lese Bilddaten...")
+    print("Model available, reading image data...")
 
-    img_bytes = image_file.read()
     try:
-        img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+        img = Image.open(io.BytesIO(image_file.read())).convert('RGB')
     except Exception as e:
-        print(f"Fehler beim Laden des Bildes: {e}")
+        print(f"Error loading image: {e}")
         return []
 
-    print("Bild erfolgreich geladen und konvertiert.")
-    print(f"Führe Inferenz durch mit conf_threshold={conf_threshold}...")
+    print("Image successfully loaded and converted.")
+    print(f"Running inference with conf_threshold={conf_threshold}...")
 
     results = model(img, imgsz=640, conf=conf_threshold)[0]
-    print("Inferenz abgeschlossen.")
+    print("Inference complete.")
 
     detections = []
-    print("Verarbeite Ergebnisse...")
+    print("Processing results...")
     for cls, conf in zip(results.boxes.cls, results.boxes.conf):
         name = model.names[int(cls)]
-        print(f"Erkannt: {name} mit Konfidenz {float(conf):.2f}")
+        print(f"Detected: {name} with confidence {float(conf):.2f}")
         detections.append({'class': name, 'confidence': float(conf)})
 
-    print("Objekterkennung abgeschlossen.")
+    print("Object detection finished.")
     return detections
