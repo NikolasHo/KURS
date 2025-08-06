@@ -12,6 +12,7 @@ import page.utils as utils
 import random
 import uuid
 import yaml
+import re
 
 
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
@@ -611,47 +612,59 @@ def upload_training_image(request):
 
 model_weights = 'yolov5s.pt'
 
+
+
 def train_model(request):
     """
     Handle training of a YOLO model using parameters submitted via a web form.
 
-    This view accepts POST requests with training hyperparameters,
-    initializes a YOLO model, and starts training using the specified dataset config.
+    This view:
+    - Accepts POST requests with training hyperparameters
+    - Deletes the previous training output (if exists)
+    - Initializes a YOLO model and starts training
     """
     if request.method == 'POST':
         try:
             # Read hyperparameters from the form (with fallback defaults)
-            epochs = int(request.POST.get('epochs', 50))      # Number of training epochs
-            imgsz = int(request.POST.get('imgsz', 640))        # Input image size for training
+            epochs = int(request.POST.get('epochs', 50))       # Number of epochs
+            imgsz = int(request.POST.get('imgsz', 640))        # Image size
 
             debug_print(f"Training requested: {epochs} epochs, image size {imgsz}")
         except ValueError:
-            # Handle malformed input (non-integer values)
+            # Handle invalid form input
             return HttpResponseServerError('Invalid parameters.')
 
         try:
-            # Initialize the YOLO model using the specified pre-trained weights
+            # Remove previous training output directory, if it exists
+            output_dir = os.path.join(settings.BASE_DIR, 'runs', 'web-training')
+            if os.path.exists(output_dir):
+                debug_print(f"Removing previous training output at: {output_dir}")
+                shutil.rmtree(output_dir)
+
+            # Initialize the YOLO model with pretrained weights
             model = YOLO(model_weights)
             debug_print("Model initialized. Starting training...")
 
-            # Start training with provided config and parameters
+            # Start training
             model.train(
-                data=DATASET_CONFIG,  # Path to dataset.yaml with train/val/names/nc
+                data=DATASET_CONFIG,  # Path to dataset.yaml
                 epochs=epochs,
                 imgsz=imgsz,
-                project=os.path.join(settings.BASE_DIR, 'runs'),  # Output directory
-                name='web-training',  # Subdirectory name
+                project=os.path.join(settings.BASE_DIR, 'runs'),
+                name='web-training',
+                # exist_ok not needed since we remove the folder before
             )
         except Exception as e:
-            # Catch any error during training and report it
+            # Catch and report training errors
             debug_print(f"Training failed: {e}")
             return HttpResponseServerError(f'Training failed: {e}')
 
-        # If training completes successfully, return a JSON response
+        # Return success response
         return JsonResponse({'success': True, 'message': 'Training completed.'})
 
-    # If the request is not POST, show the training form (GET)
+    # GET: Render the training form page
     return render(request, 'pages/train_model.html')
+
 
 
 def detect_and_add(request):
