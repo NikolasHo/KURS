@@ -484,33 +484,27 @@ def restore_database(request):
 
 ### New KI
 
-# Pfad zur Dataset-Konfiguration
-DATASET_CONFIG = os.path.join(
-    settings.BASE_DIR,
-    'classification',
-    'yolov5_dataset',
-    'dataset.yaml'
-)
-DATASET_ROOT = os.path.join(
-    settings.BASE_DIR,
-    'classification',
-    'yolov5_dataset'
-)
+# Global debug print (only outputs if DEBUG is True)
+def debug_print(message):
+    if settings.DEBUG:
+        print(message)
+
+# Dataset configuration and root path
+DATASET_CONFIG = os.path.join(settings.BASE_DIR, 'classification', 'yolov5_dataset', 'dataset.yaml')
+DATASET_ROOT = os.path.join(settings.BASE_DIR, 'classification', 'yolov5_dataset')
+
 
 def load_class_names():
-    """
-    Liest die Klassennamen aus der dataset.yaml
-    und gibt sie als Liste zurück.
-    """
+    """Load class names from dataset.yaml."""
+    debug_print("Loading class names from dataset config.")
     with open(DATASET_CONFIG, 'r') as f:
         cfg = yaml.safe_load(f)
     return cfg.get('names', [])
 
+
 def save_class_names(names):
-    """
-    Speichert die aktualisierte list der Klassennamen in dataset.yaml,
-    aktualisiert 'nc' entsprechend.
-    """
+    """Save updated class names to dataset.yaml, including class count."""
+    debug_print(f"Saving {len(names)} class names to config.")
     data = {
         'train': 'images/train',
         'val': 'images/val',
@@ -520,203 +514,320 @@ def save_class_names(names):
     with open(DATASET_CONFIG, 'w') as f:
         yaml.dump(data, f)
 
+
 def add_class_name(request):
     """
-    HAndelt das Hinzufügen einer neuen Klasse über das Web-Formular.
+    Handle adding a new class name via POST from the web form.
+
+    This view updates the YOLO dataset configuration (dataset.yaml)
+    by appending a new class name and updating the class count (nc).
     """
     if request.method == 'POST':
+        # Get the submitted class name from the form, remove leading/trailing whitespace
         new_name = request.POST.get('new_class_name', '').strip()
+
+        # Validate that the name is not empty
         if not new_name:
-            return HttpResponseServerError('Kein Klassenname angegeben.')
+            return HttpResponseServerError('No class name provided.')
+
+        # Load the existing class names from dataset.yaml
         names = load_class_names()
+
+        # Check if the class already exists
         if new_name in names:
-            return HttpResponseServerError('Klasse existiert bereits.')
+            return HttpResponseServerError('Class already exists.')
+
+        # Append the new class and save the updated config
         names.append(new_name)
         save_class_names(names)
+
+        # Debug message (only shows in development)
+        debug_print(f"Added new class: {new_name}")
+
+        # Redirect user to the image upload page
         return redirect('upload_training_image')
+
+    # If not a POST request, simply redirect to the upload page
     return redirect('upload_training_image')
 
+
+
 def upload_training_image(request):
-    # Klassenliste dynamisch laden
+    """
+    Handles uploading of training images through a web form.
+    Saves images into the correct YOLO folder structure,
+    and generates corresponding label files using full-image annotations.
+    """
+    # Load class names from the dataset config
     class_names = load_class_names()
 
     if request.method == 'POST':
-        # Ausgewählte Klasse und Dateien auslesen
+        # Get selected class ID from form and resolve the class name
         class_id = int(request.POST['class_name'])
         class_name = class_names[class_id]
+
+        # Get uploaded images from the form
         images = request.FILES.getlist('images')
 
         for img in images:
-            # Zufälliges Split: 20 % Val, 80 % Train
+            # Randomly assign to 'train' (80%) or 'val' (20%) set
             subset = 'val' if random.random() < 0.2 else 'train'
 
-            # Ziel-Ordner erstellen
+            # Build target directory path for images
             img_dir = os.path.join(DATASET_ROOT, 'images', subset)
-            os.makedirs(img_dir, exist_ok=True)
+            os.makedirs(img_dir, exist_ok=True)  # Ensure directory exists
 
-            # Eindeutigen Dateinamen generieren
-            ext = os.path.splitext(img.name)[1]
+            # Generate a unique filename for the image
+            ext = os.path.splitext(img.name)[1]  # Keep original extension
             filename = f"{class_name}_{uuid.uuid4().hex}{ext}"
-
-            # Bild speichern
             img_path = os.path.join(img_dir, filename)
+
+            # Save the uploaded image to the target directory
+            debug_print(f"Saving image to: {img_path}")
             with open(img_path, 'wb+') as f:
-                for chunk in img.chunks():
+                for chunk in img.chunks():  # Django handles chunked upload
                     f.write(chunk)
 
-            # YOLO-Label (ganze Bildfläche)
+            # Prepare the corresponding YOLO label directory
             lbl_dir = os.path.join(DATASET_ROOT, 'labels', subset)
-            os.makedirs(lbl_dir, exist_ok=True)
+            os.makedirs(lbl_dir, exist_ok=True)  # Ensure label directory exists
+
+            # Label filename matches image filename (with .txt extension)
             lbl_path = os.path.join(lbl_dir, f"{os.path.splitext(filename)[0]}.txt")
+
+            # Write YOLO label:
+            # class_id x_center y_center width height
+            # Here: entire image is the bounding box (0.5, 0.5, 1.0, 1.0)
             with open(lbl_path, 'w') as f:
-                # class_id x_center y_center width height
-                # ganze Bildfläche annotieren: x_center=0.5, y_center=0.5, width=1.0, height=1.0
                 f.write(f"{class_id} 0.5 0.5 1.0 1.0\n")
 
-        # Nach Upload wieder zurück zur Upload-Seite
+            debug_print(f"Label saved to: {lbl_path}")
+
+        # After upload, redirect back to the same page (clean form)
         return redirect('upload_training_image')
 
-    # GET: Formular anzeigen mit dynamischen Klassen
-    return render(
-        request,
-        'pages/upload_training.html',
-        {'class_names': load_class_names()}
-    )
+    # GET request: Render the form page with current class list
+    return render(request, 'pages/upload_training.html', {'class_names': class_names})
 
 model_weights = 'yolov5s.pt'
 
-
 def train_model(request):
-    if request.method == 'POST':
-        # Hyperparameter aus Formular
-        try:
-            epochs = int(request.POST.get('epochs', 50))
-            imgsz = int(request.POST.get('imgsz', 640))
-        except ValueError:
-            return HttpResponseServerError('Ungültige Parameter.')
+    """
+    Handle training of a YOLO model using parameters submitted via a web form.
 
-        # YOLO-Train aufrufen
+    This view accepts POST requests with training hyperparameters,
+    initializes a YOLO model, and starts training using the specified dataset config.
+    """
+    if request.method == 'POST':
         try:
+            # Read hyperparameters from the form (with fallback defaults)
+            epochs = int(request.POST.get('epochs', 50))      # Number of training epochs
+            imgsz = int(request.POST.get('imgsz', 640))        # Input image size for training
+
+            debug_print(f"Training requested: {epochs} epochs, image size {imgsz}")
+        except ValueError:
+            # Handle malformed input (non-integer values)
+            return HttpResponseServerError('Invalid parameters.')
+
+        try:
+            # Initialize the YOLO model using the specified pre-trained weights
             model = YOLO(model_weights)
+            debug_print("Model initialized. Starting training...")
+
+            # Start training with provided config and parameters
             model.train(
-                data=DATASET_CONFIG,
+                data=DATASET_CONFIG,  # Path to dataset.yaml with train/val/names/nc
                 epochs=epochs,
                 imgsz=imgsz,
-                project=os.path.join(settings.BASE_DIR, 'runs'),
-                name='web-training',
+                project=os.path.join(settings.BASE_DIR, 'runs'),  # Output directory
+                name='web-training',  # Subdirectory name
             )
         except Exception as e:
-            return HttpResponseServerError(f'Training fehlgeschlagen: {e}')
+            # Catch any error during training and report it
+            debug_print(f"Training failed: {e}")
+            return HttpResponseServerError(f'Training failed: {e}')
 
-        return JsonResponse({'success': True, 'message': 'Training abgeschlossen.'})
-    # GET: Formular anzeigen
+        # If training completes successfully, return a JSON response
+        return JsonResponse({'success': True, 'message': 'Training completed.'})
+
+    # If the request is not POST, show the training form (GET)
     return render(request, 'pages/train_model.html')
 
 
-
-
 def detect_and_add(request):
+    """
+    Detect ingredients from an uploaded image and update the database accordingly.
+
+    This view performs the following:
+    - Accepts an image via POST request
+    - Runs object detection on the image
+    - Adds new ingredients or updates existing ones based on detected classes
+    - Returns a JSON response indicating which ingredients were added or updated
+    """
+    # Check if an image file was included in the request
     if 'image' not in request.FILES:
-        return JsonResponse({'success': False, 'error': 'Kein Bild gesendet.'}, status=400)
+        return JsonResponse({'success': False, 'error': 'No image uploaded.'}, status=400)
 
-    dets = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
-    if not dets:
-        return JsonResponse({'success': False, 'error': 'Kein Modell verfügbar oder keine Erkennung.'})
+    # Run detection on the uploaded image using YOLO model
+    detections = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
 
-    added, updated = [], []
-    counts = {}
-    for d in dets:
-        desc = d['class']
+    # Handle detection failure or missing model
+    if not detections:
+        return JsonResponse({'success': False, 'error': 'No model available or no detections.'})
+
+    added, updated = []  # Lists to track changes
+    counts = {}          # Dictionary to count how often each class was detected
+
+    # Count occurrences of each detected class
+    for det in detections:
+        desc = det['class']
         counts[desc] = counts.get(desc, 0) + 1
 
-    for desc, cnt in counts.items():
+    # Add new ingredients or update existing ones in the database
+    for desc, count in counts.items():
         obj, created = Ingredient.objects.get_or_create(
             description=desc,
             part_of_recipe=False,
-            defaults={'quantity': cnt, 'weight': 0}
+            defaults={'quantity': count, 'weight': 0}  # Default weight if not provided
         )
+
         if created:
+            # New ingredient was added
             added.append(desc)
+            debug_print(f"Added ingredient: {desc}")
         else:
-            obj.quantity += cnt
+            # Ingredient already exists: update quantity
+            obj.quantity += count
             obj.save()
             updated.append(desc)
+            debug_print(f"Updated ingredient: {desc}")
 
+    # Return the result as JSON
     return JsonResponse({'success': True, 'added': added, 'updated': updated})
-
 def bulk_add_ingredients(request):
-    # GET: Bulk-Erkennungsseite
+    """
+    Render the page for bulk image upload and detection.
+
+    This view simply serves the HTML template that allows users
+    to upload multiple images for detection and processing.
+    """
     return render(request, 'pages/bulk_add_ingredients.html')
 
 
 def detect_and_list(request):
+    """
+    Perform object detection on an uploaded image and return a class-wise summary.
+
+    This view:
+    - Accepts an image via POST
+    - Detects objects using the YOLO model
+    - Counts how many times each class appears
+    - Returns the result as a list of {class, count} entries
+    """
     if 'image' not in request.FILES:
-        return JsonResponse({'success': False, 'error': 'Kein Bild.'}, status=400)
-    # Inferenz durchführen
+        return JsonResponse({'success': False, 'error': 'No image.'}, status=400)
+
+    # Run object detection
     detections = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
-    # Klassen zählen
+
     counts = {}
+    # Count each detected class
     for det in detections:
         cls = det['class']
         counts[cls] = counts.get(cls, 0) + 1
-    # In Liste umwandeln
+
+    # Convert counts to list format for response
     items = [{'class': cls, 'count': count} for cls, count in counts.items()]
+    debug_print(f"Detection summary: {items}")
+
     return JsonResponse({'success': True, 'items': items})
 
+
 def bulk_save_ingredients(request):
-    # Parsen der POST-Felder items[i].<field>
+    """
+    Process form submission for bulk ingredient creation or update.
+
+    This view:
+    - Parses the incoming form fields structured as items[i].<field>
+    - Extracts all values for each ingredient (description, mhd, quantity, weight, tags)
+    - Adds new ingredients or updates existing ones in the database
+    - Returns which items were added or updated
+    """
+    # Regex pattern to match form keys like items[0].description, items[1].weight, etc.
     pattern = re.compile(r'^items\[(\d+)\]\.(\w+)$')
     temp = {}
-    for key, vals in request.POST.lists():
-        m = pattern.match(key)
-        if not m:
+
+    # Group all fields by their item index
+    for key, values in request.POST.lists():
+        match = pattern.match(key)
+        if not match:
             continue
-        idx = int(m.group(1))
-        field = m.group(2)
-        value = vals[0]
-        temp.setdefault(idx, {})[field] = value
+        idx = int(match.group(1))         # Index number of the ingredient
+        field = match.group(2)            # Field name (e.g. description, weight)
+        temp.setdefault(idx, {})[field] = values[0]
 
     added, updated = [], []
-    # Daten validieren und speichern
+
+    # Process each indexed item
     for idx in sorted(temp.keys()):
         data = temp[idx]
         desc = data.get('description')
         if not desc:
-            continue
-        mhd = data.get('mhd') or None
+            continue  # Skip entries without a description
+
+        # Extract and clean values
+        mhd = data.get('mhd') or None  # Best-before date (optional)
         quantity = int(data.get('quantity', 1))
         weight = float(data.get('weight', 0))
-        tags = [t.strip() for t in data.get('tags', '').split(',') if t.strip()]
+        tags = [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()]
 
+        # Try to find an existing ingredient or create a new one
         obj, created = Ingredient.objects.get_or_create(
             description=desc,
             part_of_recipe=False,
-            defaults={'quantity': quantity, 'weight': weight, 'mhd': mhd}
+            defaults={
+                'quantity': quantity,
+                'weight': weight,
+                'mhd': mhd
+            }
         )
+
         if created:
+            # If new, optionally assign tags
             if hasattr(obj, 'tags'):
                 obj.tags.set(tags)
             added.append(desc)
+            debug_print(f"Added ingredient via bulk: {desc}")
         else:
+            # Update existing ingredient
             obj.quantity += quantity
             if weight:
                 obj.weight = weight
             obj.save()
             updated.append(desc)
+            debug_print(f"Updated ingredient via bulk: {desc}")
 
+    # Return success response with details
     return JsonResponse({'success': True, 'added': added, 'updated': updated})
 
 
 def test_detection(request):
     """
-    GET: Rendert die Testseite für Objekterkennung.
-    POST: Führt Detection durch und liefert JSON mit den Ergebnissen.
+    Handle image upload for testing the object detection model.
+
+    - GET: Renders a simple HTML interface to test detection manually.
+    - POST: Accepts an uploaded image, runs detection, and returns results as JSON.
     """
     if request.method == 'POST':
+        # Check if an image file was uploaded
         if 'image' not in request.FILES:
-            return JsonResponse({'success': False, 'error': 'Kein Bild.'}, status=400)
+            return JsonResponse({'success': False, 'error': 'No image.'}, status=400)
+
+        # Run detection on the uploaded image using the YOLO model
         detections = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
-        # Ergebnis direkt als JSON zurückgeben
+
+        # Return detection results as JSON
         return JsonResponse({'success': True, 'detections': detections})
-    # GET: Seite rendern
+
+    # GET request: Render the test detection HTML page
     return render(request, 'pages/test_detection.html')
