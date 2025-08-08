@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Bild-Upload mit anpassbaren Zutaten</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="image">Bild hochladen</label>
+      <input type="file" name="image" id="image" accept="image/*" class="form-control" >
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Zutaten erkennen</button>
+  </form>
+
+  {% if detected_items %}
+  <hr>
+  <h4>Erkannte Zutaten (bearbeitbar)</h4>
+  <form method="post" action="{% url 'save_detected_ingredients' %}">
+    {% csrf_token %}
+    {% for item in detected_items %}
+      <div class="form-row">
+        <div class="form-group col-md-5">
+          <label>Beschreibung</label>
+          <input type="text" name="items[{{ forloop.counter0 }}].description" value="{{ item.description }}" class="form-control">
+        </div>
+        <div class="form-group col-md-3">
+          <label>Anzahl</label>
+          <input type="number" name="items[{{ forloop.counter0 }}].quantity" value="{{ item.quantity }}" min="1" class="form-control">
+        </div>
+        <div class="form-group col-md-3">
+          <label>Gewicht (optional)</label>
+          <input type="number" name="items[{{ forloop.counter0 }}].weight" value="0" step="0.1" class="form-control">
+        </div>
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-success mt-2">Zutaten speichern</button>
+  </form>
+  {% endif %}
+
+  {% if saved %}
+    <div class="alert alert-success mt-4">
+      <strong>Gespeichert!</strong><br>
+      {% if added %}Hinzugefügt: {{ added|join:", " }}<br>{% endif %}
+      {% if updated %}Aktualisiert: {{ updated|join:", " }}{% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

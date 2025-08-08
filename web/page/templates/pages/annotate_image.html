@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Annotate Existing Images</h1>
+
+{% if images %}
+  <ul>
+    {% for img in images %}
+    <li style="margin-bottom: 10px;">
+        <strong>{{ img.filename }}</strong> ({{ img.subset }})
+        {% if img.is_annotated %}
+        <span class="text-success ml-2">✅</span>
+        {% else %}
+        <span class="text-muted ml-2">🟥 Default</span>
+        {% endif %}
+        <br>
+        <img src="/{{ img.path }}" alt="{{ img.filename }}" width="200"><br>
+        <button type="button" class="btn btn-sm btn-primary"
+                onclick="startAnnotation('{{ img.path }}', '{{ img.subset }}')">
+        Annotate
+        </button>
+    </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No images found in dataset folders.</p>
+{% endif %}
+
+<!-- Annotation Modal -->
+<div class="modal fade" id="annotationModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Annotate Image</h5>
+        <button type="button" class="close btn btn-light" data-dismiss="modal" aria-label="Close" onclick="$('#annotationModal').modal('hide')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <form id="annotationForm" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <input type="hidden" name="subset" id="subset">
+          <input type="hidden" name="filename" id="filename">
+          <canvas id="canvas" style="border:1px solid #ccc; max-width: 100%; background-color: #fff;"></canvas><br><br>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="$('#annotationModal').modal('hide')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Annotations</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- Load Bootstrap & jQuery -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const form = document.getElementById('annotationForm');
+  let boxes = [];
+  let img = new Image();
+  let isDrawing = false;
+  let startX = 0, startY = 0;
+  let activeBoxIndex = null;
+
+  function getMousePos(event) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (event.clientX - rect.left) * scaleX,
+      y: (event.clientY - rect.top) * scaleY
+    };
+  }
+
+  function drawAllBoxes() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    boxes.forEach((box, i) => {
+      ctx.strokeStyle = (i === activeBoxIndex) ? 'blue' : 'red';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.strokeRect(
+        box.x_min,
+        box.y_min,
+        box.x_max - box.x_min,
+        box.y_max - box.y_min
+      );
+    });
+  }
+
+  function loadExistingLabels(imagePath, subset, filename) {
+    const labelPath = `/media/labels/${subset}/${filename.replace(/\.[^/.]+$/, "")}.txt?nocache=${Date.now()}`;
+
+    console.log("[LOG] ➤ Trying to load label file:", labelPath);
+
+    fetch(labelPath)
+      .then(res => {
+        if (!res.ok) throw new Error('No existing labels');
+        return res.text();
+      })
+      .then(text => {
+        console.log("[LOG] ✅ Label file loaded.");
+        console.log("[LOG] Raw label content:", text);
+        console.log("[LOG] img.scale:", img.scale, "img.originalWidth:", img.originalWidth, "img.originalHeight:", img.originalHeight);
+
+        const lines = text.trim().split("\n");
+        lines.forEach((line, idx) => {
+          const [class_id, x, y, w, h] = line.split(" ").map(Number);
+          const cx = x * img.originalWidth;
+          const cy = y * img.originalHeight;
+          const boxWidth = w * img.originalWidth;
+          const boxHeight = h * img.originalHeight;
+
+          const scaledCx = cx * img.scale;
+          const scaledCy = cy * img.scale;
+          const scaledW = boxWidth * img.scale;
+          const scaledH = boxHeight * img.scale;
+
+          const box = {
+            class_id: class_id.toString(),
+            x_min: scaledCx - scaledW / 2,
+            y_min: scaledCy - scaledH / 2,
+            x_max: scaledCx + scaledW / 2,
+            y_max: scaledCy + scaledH / 2
+          };
+
+          boxes.push(box);
+          console.log(`[LOG] Parsed box #${idx + 1}:`, box);
+        });
+
+        drawAllBoxes();
+      })
+      .catch((err) => {
+        console.warn('[LOG] ⚠️ No label file or error:', err.message);
+      });
+  }
+
+  window.startAnnotation = function (imagePath, subset) {
+    boxes = [];
+    activeBoxIndex = null;
+    const filename = imagePath.split('/').pop();
+
+    document.getElementById('subset').value = subset;
+    document.getElementById('filename').value = filename;
+
+    img.onload = function () {
+      const containerWidth = Math.min(window.innerWidth * 0.9, img.width);
+      const scale = containerWidth / img.width;
+
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+
+      img.originalWidth = img.width;
+      img.originalHeight = img.height;
+      img.scale = scale;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      setTimeout(() => {
+        loadExistingLabels(imagePath, subset, filename);
+        $('#annotationModal').modal('show');
+      }, 30);
+    };
+
+    img.onerror = function () {
+      alert('Failed to load image.');
+    };
+
+    img.src = '/' + imagePath;
+  };
+
+  canvas.addEventListener('mousedown', function (e) {
+    const { x, y } = getMousePos(e);
+
+    activeBoxIndex = boxes.findIndex(box =>
+      x >= box.x_min &&
+      x <= box.x_max &&
+      y >= box.y_min &&
+      y <= box.y_max
+    );
+
+    if (activeBoxIndex !== -1) {
+      const confirmed = confirm("Delete this box?");
+      if (confirmed) {
+        boxes.splice(activeBoxIndex, 1);
+        activeBoxIndex = null;
+        drawAllBoxes();
+      }
+      return;
+    }
+
+    startX = x;
+    startY = y;
+    isDrawing = true;
+  });
+
+  canvas.addEventListener('mousemove', function (e) {
+    if (!isDrawing) return;
+
+    const { x: currentX, y: currentY } = getMousePos(e);
+
+    drawAllBoxes();
+
+    ctx.strokeStyle = "green";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6]);
+    ctx.strokeRect(
+      Math.min(startX, currentX),
+      Math.min(startY, currentY),
+      Math.abs(currentX - startX),
+      Math.abs(currentY - startY)
+    );
+    ctx.setLineDash([]);
+  });
+
+  canvas.addEventListener('mouseup', function (e) {
+    if (!isDrawing) return;
+    isDrawing = false;
+
+    const { x: endX, y: endY } = getMousePos(e);
+
+    const box = {
+      x_min: Math.min(startX, endX),
+      y_min: Math.min(startY, endY),
+      x_max: Math.max(startX, endX),
+      y_max: Math.max(startY, endY)
+    };
+
+    boxes.push(box);
+    drawAllBoxes();
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    const yoloBoxes = boxes.map(box => {
+      const x_center = ((box.x_min + box.x_max) / 2) / img.scale / img.originalWidth;
+      const y_center = ((box.y_min + box.y_max) / 2) / img.scale / img.originalHeight;
+      const w = (box.x_max - box.x_min) / img.scale / img.originalWidth;
+      const h = (box.y_max - box.y_min) / img.scale / img.originalHeight;
+      return `${x_center.toFixed(6)} ${y_center.toFixed(6)} ${w.toFixed(6)} ${h.toFixed(6)}`;
+    });
+
+    formData.append('boxes', JSON.stringify(yoloBoxes));
+
+    fetch("{% url 'upload_annotated_image_existing' %}", {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert(data.message || 'Saved!');
+      $('#annotationModal').modal('hide');
+      location.reload();
+    })
+    .catch(error => {
+      alert('An error occurred while saving.');
+      console.error(error);
+    });
+  });
+});
+</script>
+
+{% endblock %}

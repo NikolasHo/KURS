@@ -11,7 +11,11 @@ import uuid
 import yaml
 import re
 
+import glob
+from PIL import Image
 
+
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.http import HttpResponseServerError, JsonResponse
 from django.conf import settings
@@ -142,6 +146,72 @@ def delete_ingredient(request):
     
     return redirect('ingredients_list') 
 
+
+
+def detect_ingredients_editable(request):
+    if request.method == 'POST' and 'image' in request.FILES:
+        # Schritt 1: Bild verarbeiten und Objekte erkennen
+        detections = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
+
+          # Schritt 2: Gruppieren und zählen
+        counts = {}
+        for det in detections:
+            cls = det['class']
+            counts[cls] = counts.get(cls, 0) + 1
+
+        # Schritt 3: Daten an Template übergeben
+        detected_items = [{'description': desc, 'quantity': count} for desc, count in counts.items()]
+        return render(request, 'pages/add_ingredients_editable.html', {'detected_items': detected_items})
+
+    return render(request, 'pages/add_ingredients_editable.html')
+
+def save_edited_ingredients(request):
+    if request.method == 'POST':
+        pattern = re.compile(r'^items\[(\d+)\]\.(\w+)$')
+        temp = {}
+
+        for key, values in request.POST.lists():
+            match = pattern.match(key)
+            if not match:
+                continue
+            idx = int(match.group(1))
+            field = match.group(2)
+            temp.setdefault(idx, {})[field] = values[0]
+
+        added, updated = [], []
+
+        for idx in sorted(temp.keys()):
+            data = temp[idx]
+            desc = data.get('description')
+            if not desc:
+                continue
+
+            quantity = int(data.get('quantity', 1))
+            weight = float(data.get('weight', 0))
+
+            obj, created = Ingredient.objects.get_or_create(
+                description=desc,
+                part_of_recipe=False,
+                defaults={'quantity': quantity, 'weight': weight}
+            )
+
+            if created:
+                added.append(desc)
+            else:
+                obj.quantity += quantity
+                obj.save()
+                updated.append(desc)
+
+        return render(request, 'pages/add_ingredients_editable.html', {
+            'saved': True,
+            'added': added,
+            'updated': updated
+        })
+
+    return redirect('add_ingredients_editable')
+
+
+##### recipes
 
 def add_recipe(request):
     if request.method == 'POST':
@@ -502,9 +572,146 @@ def upload_training_image(request):
     # GET request: Render the form page with current class list
     return render(request, 'pages/upload_training.html', {'class_names': class_names})
 
+def is_custom_annotated(label_path):
+    """
+    Checks whether a YOLO label file contains a bounding box
+    that is NOT the full image.
+    """
+    if not os.path.exists(label_path):
+        return False
+
+    try:
+        with open(label_path, 'r') as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) != 5:
+                    continue
+                _, x, y, w, h = map(float, parts)
+                # Full image box is typically w = 1.0, h = 1.0
+                if w < 0.99 or h < 0.99:
+                    return True
+    except Exception as e:
+        print("[ANNOTATION CHECK] Failed to read label:", label_path, e)
+
+    return False
+
+
+
+def annotate_image(request):
+    """
+    List all existing images for annotation and mark annotated ones.
+    """
+    class_names = load_class_names()
+
+    image_paths = []
+    for subset in ['train', 'val']:
+        img_dir = os.path.join(DATASET_ROOT, 'images', subset)
+        label_dir = os.path.join(DATASET_ROOT, 'labels', subset)
+
+        for img_path in glob.glob(os.path.join(img_dir, '*.*')):
+            filename = os.path.basename(img_path)
+            rel_path = os.path.relpath(img_path, settings.MEDIA_ROOT).replace("\\", "/")
+            label_path = os.path.join(label_dir, os.path.splitext(filename)[0] + ".txt")
+
+            image_paths.append({
+                'path': os.path.join('media', rel_path),
+                'subset': subset,
+                'filename': filename,
+                'is_annotated': is_custom_annotated(label_path),
+            })
+
+    print(f"[ANNOTATE_IMAGE] Found {len(image_paths)} images for annotation.")
+
+    return render(request, 'pages/annotate_image.html', {
+        'class_names': class_names,
+        'images': image_paths
+    })
+
+
+
+CLASS_NAMES = load_class_names()
+
+@csrf_exempt
+def upload_annotated_image_existing(request):
+    """
+    Save annotations for an existing image in the dataset.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method'})
+
+    filename = request.POST.get('filename')
+    subset = request.POST.get('subset')
+    boxes_json = request.POST.get('boxes')
+
+    print("[ANNOTATE_EXISTING] Request received")
+    print("  filename:", filename)
+    print("  subset:", subset)
+    print("  boxes_raw (JSON):", boxes_json[:100] + '...')
+
+    if not filename or not subset or not boxes_json:
+        print("[ANNOTATE_EXISTING] ❌ Missing fields")
+        return JsonResponse({'success': False, 'message': 'Missing data'})
+
+    try:
+        box_lines = json.loads(boxes_json)
+        print("[ANNOTATE_EXISTING] ✅ Parsed boxes:", box_lines)
+    except Exception as e:
+        print("[ANNOTATE_EXISTING] ❌ JSON parsing error:", e)
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'})
+
+    img_path = os.path.join(DATASET_ROOT, 'images', subset, filename)
+    print("  Looking for image at:", img_path)
+
+    if not os.path.exists(img_path):
+        print("[ANNOTATE_EXISTING] ❌ Image not found!")
+        return JsonResponse({'success': False, 'message': 'Image not found'})
+
+    image = Image.open(img_path)
+    width, height = image.size
+    print(f"[ANNOTATE_EXISTING] Image size: width={width}, height={height}")
+
+    # === Automatische Klassenerkennung ===
+    CLASS_NAMES = load_class_names()
+    inferred_class = filename.split("_")[0]
+    try:
+        inferred_class_id = CLASS_NAMES.index(inferred_class)
+        print(f"[ANNOTATE_EXISTING] ➤ Auto-class: '{inferred_class}' → ID {inferred_class_id}")
+    except ValueError:
+        print(f"[ANNOTATE_EXISTING] ❌ Unknown class in filename: {inferred_class}")
+        return JsonResponse({'success': False, 'message': 'Unknown class in filename'})
+
+    label_dir = os.path.join(DATASET_ROOT, 'labels', subset)
+    os.makedirs(label_dir, exist_ok=True)
+    label_path = os.path.join(label_dir, f"{os.path.splitext(filename)[0]}.txt")
+
+    try:
+        with open(label_path, 'w') as f:
+            for line in box_lines:
+                parts = line.strip().split()
+                if len(parts) == 5:
+                    # Format: [class_id x y w h] → ersetzen class_id durch inferred_class_id
+                    _, x, y, w, h = parts
+                elif len(parts) == 4:
+                    # Format: [x y w h] → z. B. falls JS das sendet
+                    x, y, w, h = parts
+                else:
+                    print(f"[ANNOTATE_EXISTING] ❌ Invalid line skipped: {line}")
+                    continue
+
+                final_line = f"{inferred_class_id} {x} {y} {w} {h}"
+                f.write(final_line + "\n")
+                print("[ANNOTATE_EXISTING] ➤ Saved:", final_line)
+
+        print(f"[ANNOTATE_EXISTING] ✅ File saved at: {label_path}")
+
+    except Exception as e:
+        print("[ANNOTATE_EXISTING] ❌ Failed to write label file:", e)
+        return JsonResponse({'success': False, 'message': 'Failed to save label'})
+
+    return JsonResponse({'success': True, 'message': 'Annotation saved'})
+
+
 model_weights = 'yolov5s.pt'
-
-
 
 def train_model(request):
     """
@@ -736,3 +943,5 @@ def test_detection(request):
 
     # GET request: Render the test detection HTML page
     return render(request, 'pages/test_detection.html')
+
+
