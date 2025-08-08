@@ -2,9 +2,6 @@
 import json
 import logging
 import os
-import classification.classificationSettings as classificationSettings
-import classification.classify as classify
-import classification.classification as classification
 import io
 import food.fwl as fwl
 import shutil
@@ -116,51 +113,6 @@ def update_quantity(request, ingredient_id):
     logger.error("Fehler beim Aktualisieren der Anzahl.")
     return JsonResponse({'success': False})
 
-
-# Entry point for classification
-    # all stuff with the neuronal network and its traingings files
-def classification_base(request):
-
-    # Überprüfen, ob der Ordner vorhanden ist
-    if os.path.exists(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME):
-       
-        with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
-            AvailableClassNames = json.load(f)
-        
-        return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames})
-  
-    return render(request, 'pages/classification.html')
-  
-  
-def train_network(request):
-    if request.method == 'POST':
-        result = classification.train_classification_network()
-        if os.path.exists(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME):
-       
-            with open(classificationSettings.CLASSIFICATION_CLASSES_FULLNAME, 'r') as f:
-                AvailableClassNames = json.load(f)
-        
-    
-        return render(request, 'pages/classification.html', {'AvailableClassNames': AvailableClassNames,'success': result})
-
-
-# Classification of a new image
-def image_classification(request):
-    logger.info(f"classify image")
-    
-    if request.method == 'POST' and request.FILES['image']:
-        image = request.FILES['image']
-        logger.info(f"image request")
-
-        image_data = image.read()
-        image_bytes_io = io.BytesIO(image_data)
-        
-        image_class = classify.classify_image(image_bytes_io)
-        logger.info("Image class:")
-        logger.info(image_class)
-        if image_class:
-                return JsonResponse({'success': True, 'image_class': image_class})
-    return JsonResponse({'success': False})
 
 
 
@@ -285,66 +237,6 @@ def recipe_detail(request, recipe_id):
             
     return render(request, 'pages/recipe_detail.html', {'recipe': recipe_obj, 'all_ingredients_available': all_ingredients_available})
 
-
-def folder_list(request):
-    trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
-    if not os.path.exists(trainset_path):
-        # Verzeichnis anlegen, wenn es nicht vorhanden ist
-        os.makedirs(trainset_path)
-    
-    folders = os.listdir(trainset_path)
-    folder_data = []
-    
-    for folder in folders:
-        folder_path = os.path.join(trainset_path, folder)
-        images = [image for image in os.listdir(folder_path) if image.endswith('.jpeg')]
-        folder_data.append({'foldername': folder, 'images': images})
-    
-    return render(request, 'pages/folder_list.html', {'folder_data': folder_data})
-
-def create_folder(request):
-    if request.method == 'POST':
-        folder_name = request.POST.get('folder_name')
-        trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
-        new_folder_path = os.path.join(trainset_path, folder_name)
-        
-        if not os.path.exists(new_folder_path):
-            os.makedirs(new_folder_path)
-    
-    return redirect('folder_list')
-
-def delete_folder(request):
-    if request.method == 'POST':
-        folder_name = request.POST.get('folder_name')
-        trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
-        folder_path = os.path.join(trainset_path, folder_name)
-        if os.path.exists(folder_path):
-            try:
-                #os.rmdir()
-                shutil.rmtree(folder_path)
-            except Exception as e:
-                # Handhaben Sie den Fehler entsprechend
-                pass
-    return redirect('folder_list')
-
-
-def upload_image(request):
-    if request.method == 'POST':
-        folder_name = request.POST.get('folder_name')
-        
-        images = request.FILES.getlist('image')
-        trainset_path = os.path.join(settings.CLASSIFICATION_ROOT, 'trainsets')
-        folder_path = os.path.join(trainset_path, folder_name)
-        for image in images:
-                
-            
-            image_path = os.path.join(folder_path, image.name)
-            
-            with open(image_path, 'wb+') as destination:
-                for chunk in image.chunks():
-                    destination.write(chunk)
-    
-    return redirect('folder_list')
 
 
 def cooked_recipe(request, recipe_id):

@@ -26,13 +26,6 @@ urlpatterns = [
     path('', views.base, name='base'),
     
     #KI
-    path('folders/', views.folder_list, name='folder_list'),
-    path('folders/create/', views.create_folder, name='create_folder'),
-    path('folders/delete/', views.delete_folder, name='delete_folder'),
-    path('images/upload/', views.upload_image, name='upload_image'),
-    path('train_network/', views.train_network, name='train_network'),
-    path('image_classification/', views.image_classification, name='image_classification'),
-    path('classification/', views.classification_base, name='classification'),
     path('upload_training/', views.upload_training_image, name='upload_training_image'),
     path('add-class/', views.add_class_name, name='add_class_name'),
     path('train-model/', views.train_model, name='train_model'),
