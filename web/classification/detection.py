@@ -31,6 +31,7 @@ def detect_ingredients(image_file, conf_threshold=0.5):
         return []
 
     debug_print("Model available, reading image data...")
+    debug_print(f"Available model classes: {model.names}")
 
     # Read and convert the uploaded image to RGB format
     try:
