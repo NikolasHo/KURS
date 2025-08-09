@@ -599,9 +599,14 @@ def is_custom_annotated(label_path):
 
 def annotate_image(request):
     """
-    List all existing images for annotation and mark annotated ones.
+    List all existing images for annotation and mark annotated ones,
+    with optional filters by class and annotation state.
     """
     class_names = load_class_names()
+
+    # Filter aus Query-Params
+    selected_class = (request.GET.get('cls') or '').strip()   # Klassenname oder ''
+    annotated_filter = request.GET.get('annotated', 'all')    # 'all' | 'yes' | 'no'
 
     image_paths = []
     for subset in ['train', 'val']:
@@ -613,19 +618,37 @@ def annotate_image(request):
             rel_path = os.path.relpath(img_path, settings.MEDIA_ROOT).replace("\\", "/")
             label_path = os.path.join(label_dir, os.path.splitext(filename)[0] + ".txt")
 
+            # Klasse aus Dateiname ermitteln: <class>_<uuid>.<ext>
+            inferred_class = filename.split("_")[0]
+
+            # Annotierungsstatus bestimmen
+            annotated = is_custom_annotated(label_path)
+
+            # Filter anwenden
+            if selected_class and inferred_class != selected_class:
+                continue
+            if annotated_filter == 'yes' and not annotated:
+                continue
+            if annotated_filter == 'no' and annotated:
+                continue
+
             image_paths.append({
                 'path': os.path.join('media', rel_path),
                 'subset': subset,
                 'filename': filename,
-                'is_annotated': is_custom_annotated(label_path),
+                'is_annotated': annotated,
+                'inferred_class': inferred_class,
             })
 
-    print(f"[ANNOTATE_IMAGE] Found {len(image_paths)} images for annotation.")
+    print(f"[ANNOTATE_IMAGE] Found {len(image_paths)} images after filtering.")
 
     return render(request, 'pages/annotate_image.html', {
         'class_names': class_names,
-        'images': image_paths
+        'images': image_paths,
+        'selected_class': selected_class,
+        'annotated_filter': annotated_filter,
     })
+
 
 
 
