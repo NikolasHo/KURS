@@ -18,14 +18,6 @@
 <form method="post" enctype="multipart/form-data" action="{% url 'upload_training_image' %}">
   {% csrf_token %}
   <div class="form-group">
-    <label for="class_name">Klasse</label>
-    <select name="class_name" id="class_name" class="form-control">
-      {% for class in class_names %}
-        <option value="{{ forloop.counter0 }}">{{ class }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="form-group">
     <label for="images">Bilder auswählen</label>
     <input type="file" name="images" id="images" multiple class="form-control-file" accept="image/*">
   </div>

@@ -525,9 +525,6 @@ def upload_training_image(request):
     class_names = load_class_names()
 
     if request.method == 'POST':
-        # Get selected class ID from form and resolve the class name
-        class_id = int(request.POST['class_name'])
-        class_name = class_names[class_id]
 
         # Get uploaded images from the form
         images = request.FILES.getlist('images')
@@ -540,9 +537,9 @@ def upload_training_image(request):
             img_dir = os.path.join(DATASET_ROOT, 'images', subset)
             os.makedirs(img_dir, exist_ok=True)  # Ensure directory exists
 
-            # Generate a unique filename for the image
+            # Generate a unique filename for the image: **nur UUID**, keine Klasse
             ext = os.path.splitext(img.name)[1]  # Keep original extension
-            filename = f"{class_name}_{uuid.uuid4().hex}{ext}"
+            filename = f"{uuid.uuid4().hex}{ext}"
             img_path = os.path.join(img_dir, filename)
 
             # Save the uploaded image to the target directory
@@ -562,7 +559,7 @@ def upload_training_image(request):
             # class_id x_center y_center width height
             # Here: entire image is the bounding box (0.5, 0.5, 1.0, 1.0)
             with open(lbl_path, 'w') as f:
-                f.write(f"{class_id} 0.5 0.5 1.0 1.0\n")
+                f.write(f"0 0.5 0.5 1.0 1.0\n")
 
             debug_print(f"Label saved to: {lbl_path}")
 
@@ -571,6 +568,7 @@ def upload_training_image(request):
 
     # GET request: Render the form page with current class list
     return render(request, 'pages/upload_training.html', {'class_names': class_names})
+
 
 def is_custom_annotated(label_path):
     """
@@ -618,10 +616,20 @@ def annotate_image(request):
             rel_path = os.path.relpath(img_path, settings.MEDIA_ROOT).replace("\\", "/")
             label_path = os.path.join(label_dir, os.path.splitext(filename)[0] + ".txt")
 
-            # Klasse aus Dateiname ermitteln: <class>_<uuid>.<ext>
-            inferred_class = filename.split("_")[0]
+            # Klasse **aus Label** lesen (erste Spalte = class_id), nicht mehr aus dem Dateinamen
+            inferred_class = ''
+            if os.path.exists(label_path):
+                try:
+                    with open(label_path, 'r') as lf:
+                        first = lf.readline().strip().split()
+                        if len(first) >= 1:
+                            cls_id = int(first[0])
+                            if 0 <= cls_id < len(class_names):
+                                inferred_class = class_names[cls_id]
+                except Exception:
+                    inferred_class = ''
 
-            # Annotierungsstatus bestimmen
+            # Annotierungsstatus bestimmen (benutzt deine bestehende Logik)
             annotated = is_custom_annotated(label_path)
 
             # Filter anwenden
@@ -652,6 +660,7 @@ def annotate_image(request):
 
 
 
+
 CLASS_NAMES = load_class_names()
 
 @csrf_exempt
@@ -669,7 +678,7 @@ def upload_annotated_image_existing(request):
     print("[ANNOTATE_EXISTING] Request received")
     print("  filename:", filename)
     print("  subset:", subset)
-    print("  boxes_raw (JSON):", boxes_json[:100] + '...')
+    print("  boxes_raw (JSON):", (boxes_json[:100] + '...') if boxes_json else None)
 
     if not filename or not subset or not boxes_json:
         print("[ANNOTATE_EXISTING] ❌ Missing fields")
@@ -689,49 +698,57 @@ def upload_annotated_image_existing(request):
         print("[ANNOTATE_EXISTING] ❌ Image not found!")
         return JsonResponse({'success': False, 'message': 'Image not found'})
 
-    image = Image.open(img_path)
-    width, height = image.size
-    print(f"[ANNOTATE_EXISTING] Image size: width={width}, height={height}")
-
-    # === Automatische Klassenerkennung ===
-    CLASS_NAMES = load_class_names()
-    inferred_class = filename.split("_")[0]
-    try:
-        inferred_class_id = CLASS_NAMES.index(inferred_class)
-        print(f"[ANNOTATE_EXISTING] ➤ Auto-class: '{inferred_class}' → ID {inferred_class_id}")
-    except ValueError:
-        print(f"[ANNOTATE_EXISTING] ❌ Unknown class in filename: {inferred_class}")
-        return JsonResponse({'success': False, 'message': 'Unknown class in filename'})
-
+    # Ziel-Labeldatei
     label_dir = os.path.join(DATASET_ROOT, 'labels', subset)
     os.makedirs(label_dir, exist_ok=True)
     label_path = os.path.join(label_dir, f"{os.path.splitext(filename)[0]}.txt")
+
+    # Default-Klasse bestimmen:
+    # 1) Falls per POST mitgegeben: class_id verwenden
+    # 2) Sonst, falls bestehende Labeldatei: deren erste class_id als Default
+    default_class_id = request.POST.get('class_id')
+    if default_class_id is not None and str(default_class_id).isdigit():
+        default_class_id = int(default_class_id)
+    else:
+        default_class_id = None
+        if os.path.exists(label_path):
+            try:
+                with open(label_path, 'r') as lf:
+                    first = lf.readline().strip().split()
+                    if len(first) >= 1 and first[0].isdigit():
+                        default_class_id = int(first[0])
+            except Exception:
+                pass
 
     try:
         with open(label_path, 'w') as f:
             for line in box_lines:
                 parts = line.strip().split()
                 if len(parts) == 5:
-                    # Format: [class_id x y w h] → ersetzen class_id durch inferred_class_id
-                    _, x, y, w, h = parts
+                    # [class_id x y w h] → Klasse übernehmen, nichts überschreiben
+                    cls_id, x, y, w, h = parts
                 elif len(parts) == 4:
-                    # Format: [x y w h] → z. B. falls JS das sendet
+                    # [x y w h] → Klasse fehlt; Default verwenden
+                    if default_class_id is None:
+                        print("[ANNOTATE_EXISTING] ❌ class_id missing for a box without class.")
+                        return JsonResponse({'success': False, 'message': 'class_id missing for boxes without class.'})
                     x, y, w, h = parts
+                    cls_id = str(default_class_id)
                 else:
                     print(f"[ANNOTATE_EXISTING] ❌ Invalid line skipped: {line}")
                     continue
 
-                final_line = f"{inferred_class_id} {x} {y} {w} {h}"
+                final_line = f"{cls_id} {x} {y} {w} {h}"
                 f.write(final_line + "\n")
                 print("[ANNOTATE_EXISTING] ➤ Saved:", final_line)
 
         print(f"[ANNOTATE_EXISTING] ✅ File saved at: {label_path}")
-
     except Exception as e:
         print("[ANNOTATE_EXISTING] ❌ Failed to write label file:", e)
         return JsonResponse({'success': False, 'message': 'Failed to save label'})
 
     return JsonResponse({'success': True, 'message': 'Annotation saved'})
+
 
 
 model_weights = 'yolov5s.pt'

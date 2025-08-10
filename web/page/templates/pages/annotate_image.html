@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Annotate Existing Images</h1>
 
-<!-- Filterleiste -->
+<!-- Filter -->
 <form method="get" class="form-inline mb-3">
   <label class="mr-2">Klasse</label>
   <select name="cls" class="form-control mr-3">
@@ -32,20 +32,19 @@
   <ul>
     {% for img in images %}
     <li style="margin-bottom: 10px;">
-        <strong>{{ img.filename }}</strong>
-        ({{ img.subset }}
-        {% if img.inferred_class %} • {{ img.inferred_class }}{% endif %})
-        {% if img.is_annotated %}
-          <span class="text-success ml-2">✅ Annotiert</span>
-        {% else %}
-          <span class="text-muted ml-2">🟥 Nicht annotiert</span>
-        {% endif %}
-        <br>
-        <img src="/{{ img.path }}" alt="{{ img.filename }}" width="200"><br>
-        <button type="button" class="btn btn-sm btn-primary"
-                onclick="startAnnotation('{{ img.path }}', '{{ img.subset }}')">
-          Annotate
-        </button>
+      <strong>{{ img.filename }}</strong>
+      ({{ img.subset }}{% if img.inferred_class %} • {{ img.inferred_class }}{% endif %})
+      {% if img.is_annotated %}
+        <span class="text-success ml-2">✅ Annotiert</span>
+      {% else %}
+        <span class="text-muted ml-2">🟥 Nicht annotiert</span>
+      {% endif %}
+      <br>
+      <img src="/{{ img.path }}" alt="{{ img.filename }}" width="200"><br>
+      <button type="button" class="btn btn-sm btn-primary"
+              onclick="startAnnotation('{{ img.path }}', '{{ img.subset }}')">
+        Annotate
+      </button>
     </li>
     {% endfor %}
   </ul>
@@ -53,278 +52,269 @@
   <p>No images found in dataset folders.</p>
 {% endif %}
 
-<!-- Load Bootstrap & jQuery -->
+<!-- Bootstrap & jQuery -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- Sichere Übergabe der Klassenliste als JSON -->
+{{ class_names|json_script:"class-names" }}
+
 <script>
+/* IIFE-Start */
 (function () {
+  // ---- Klassen aus JSON ziehen (kein Template-Code im JS mehr) ----
+  const CLASS_NAMES = JSON.parse(document.getElementById('class-names').textContent);
+
   // ---- State ----
   let modal, canvas, ctx, form, closeBtn, saveBtn;
-  let boxes = [];
+  let classPicker, boxesList;
+  let boxes = []; // {x_min,y_min,x_max,y_max,class_id}
   let img = new Image();
   let isDrawing = false;
   let startX = 0, startY = 0;
   let activeBoxIndex = null;
   let listenersBound = false;
+  let currentClassId = 0;
 
-  // ---- Utilities ----
+  function colorForClass(id) {
+    const colors = ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#84cc16','#f97316','#06b6d4'];
+    return colors[id % colors.length];
+  }
+
+  // ---- Modal & DOM ----
   function ensureModalExists() {
     modal = document.getElementById('annotationModal');
     if (modal) return;
 
-    // Minimaler, eigenständiger Modal mit Canvas + Formular
     const html = `
-      <div id="annotationModal" style="
-          position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-          display:none; align-items:center; justify-content:center; z-index: 9999;">
-        <div style="
-            background:#fff; width:min(96vw,1000px); max-height:92vh; overflow:auto;
-            border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.3); padding:16px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-            <h3 style="margin:6px 0;">Bild annotieren</h3>
-            <button id="annotClose" type="button" aria-label="Schließen"
-                    style="border:none;background:#eee;border-radius:10px;padding:8px 12px;cursor:pointer">Schließen</button>
+      <div id="annotationModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;">
+        <div style="background:#fff;width:min(96vw,1200px);max-height:92vh;overflow:auto;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:16px;">
+          <div class="d-flex align-items-center justify-content-between">
+            <h3 class="m-0">Bild annotieren</h3>
+            <button id="annotClose" type="button" class="btn btn-light btn-sm">Schließen</button>
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <canvas id="canvas" width="800" height="600" style="max-width:100%; border:1px solid #ddd; border-radius:10px;"></canvas>
+          <div class="row mt-2">
+            <div class="col-md-8">
+              <div class="mb-2 d-flex align-items-center" style="gap:10px;">
+                <label class="mb-0">Klasse zum Zeichnen:</label>
+                <select id="classPicker" class="form-control form-control-sm" style="width:220px;"></select>
+                <small class="text-muted">Erst Klasse wählen, dann auf dem Bild ziehen.</small>
+              </div>
+              <canvas id="canvas" width="800" height="600" style="max-width:100%;border:1px solid #ddd;border-radius:10px;cursor:crosshair;"></canvas>
+            </div>
 
-            <form id="annotationForm" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-              <input type="hidden" name="subset" id="subset">
-              <input type="hidden" name="filename" id="filename">
-              <!-- Falls du eine Klassen-Auswahl brauchst, kannst du hier ein <select> ergänzen -->
-              <button id="annotSave" type="submit" style="padding:8px 14px; border-radius:10px; border:none; background:#2563eb; color:#fff; cursor:pointer;">
-                Speichern
-              </button>
-            </form>
-
-            <small style="color:#666">Tipp: Ziehe mit der Maus, um eine Box zu erstellen. Box anklicken, um sie zu löschen.</small>
+            <div class="col-md-4">
+              <h6>Boxen im Bild</h6>
+              <div id="boxesList" class="border rounded p-2" style="max-height:60vh;overflow:auto;"></div>
+              <form id="annotationForm" class="mt-3">
+                <input type="hidden" name="subset" id="subset">
+                <input type="hidden" name="filename" id="filename">
+                <button id="annotSave" type="submit" class="btn btn-primary btn-block">Speichern</button>
+              </form>
+              <small class="text-muted d-block mt-2">Box anklicken = markieren • Doppelklick = löschen</small>
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
     document.body.insertAdjacentHTML('beforeend', html);
   }
-
-  function showModal() { ensureModalExists(); document.getElementById('annotationModal').style.display = 'flex'; }
-  function hideModal() { ensureModalExists(); document.getElementById('annotationModal').style.display = 'none'; }
+  function showModal(){ ensureModalExists(); document.getElementById('annotationModal').style.display='flex'; }
+  function hideModal(){ ensureModalExists(); document.getElementById('annotationModal').style.display='none'; }
 
   function ensureDomRefs() {
     ensureModalExists();
     canvas = document.getElementById('canvas') || canvas;
-    form   = document.getElementById('annotationForm') || form;
+    form = document.getElementById('annotationForm') || form;
     closeBtn = document.getElementById('annotClose') || closeBtn;
-    saveBtn  = document.getElementById('annotSave') || saveBtn;
-
-    if (!canvas) { console.error('No #canvas element in DOM'); return false; }
-    if (!form)   { console.error('No #annotationForm element in DOM'); return false; }
-    if (!ctx) {
-      ctx = canvas.getContext('2d');
-      if (!ctx) { console.error('Could not get 2D context from canvas'); return false; }
-    }
-    return true;
+    saveBtn = document.getElementById('annotSave') || saveBtn;
+    classPicker = document.getElementById('classPicker') || classPicker;
+    boxesList = document.getElementById('boxesList') || boxesList;
+    if (!ctx && canvas) ctx = canvas.getContext('2d');
+    return !!(canvas && form && closeBtn && saveBtn && classPicker && boxesList && ctx);
   }
 
-  function getMousePos(event) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    return {
-      x: (event.clientX - rect.left) * scaleX,
-      y: (event.clientY - rect.top) * scaleY
-    };
+  function populateClassPicker() {
+    classPicker.innerHTML = '';
+    CLASS_NAMES.forEach((name, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = `${idx} — ${name}`;
+      classPicker.appendChild(opt);
+    });
+    classPicker.value = currentClassId;
   }
 
-  function drawAllBoxes() {
-    if (!ensureDomRefs()) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // ---- Helpers ----
+  function getMousePos(e) {
+    const r = canvas.getBoundingClientRect();
+    const sx = canvas.width / r.width, sy = canvas.height / r.height;
+    return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
+  }
+
+  function drawAll() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    boxes.forEach((box, i) => {
-      ctx.strokeStyle = (i === activeBoxIndex) ? 'blue' : 'red';
-      ctx.lineWidth = 2;
+    boxes.forEach((b,i)=>{
+      ctx.strokeStyle = colorForClass(+b.class_id);
+      ctx.lineWidth = (i===activeBoxIndex)?3:2;
       ctx.setLineDash([]);
-      ctx.strokeRect(
-        box.x_min,
-        box.y_min,
-        box.x_max - box.x_min,
-        box.y_max - box.y_min
-      );
+      ctx.strokeRect(b.x_min,b.y_min,b.x_max-b.x_min,b.y_max-b.y_min);
+      const label = `${b.class_id} ${CLASS_NAMES[b.class_id]||''}`;
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle='rgba(0,0,0,.6)';
+      const tw = ctx.measureText(label).width+8;
+      ctx.fillRect(b.x_min, b.y_min-16, tw, 16);
+      ctx.fillStyle='#fff';
+      ctx.fillText(label, b.x_min+4, b.y_min-4);
     });
   }
 
-  function loadExistingLabels(imagePath, subset, filename) {
+  function refreshList(){
+    boxesList.innerHTML='';
+    boxes.forEach((b,i)=>{
+      const row=document.createElement('div');
+      row.className='d-flex align-items-center mb-2';
+      row.style.gap='6px';
+
+      const badge=document.createElement('span');
+      badge.className='badge'; badge.style.background=colorForClass(+b.class_id);
+      badge.textContent=i+1;
+
+      const sel=document.createElement('select');
+      sel.className='form-control form-control-sm'; sel.style.width='100%';
+      CLASS_NAMES.forEach((name,idx)=>{
+        const opt=document.createElement('option'); opt.value=idx; opt.textContent=`${idx} — ${name}`;
+        if(+b.class_id===idx) opt.selected=true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change',()=>{ b.class_id=+sel.value; drawAll(); });
+
+      const del=document.createElement('button');
+      del.type='button'; del.className='btn btn-sm btn-outline-danger'; del.textContent='Löschen';
+      del.addEventListener('click',()=>{ boxes.splice(i,1); activeBoxIndex=null; refreshList(); drawAll(); });
+
+      row.appendChild(badge); row.appendChild(sel); row.appendChild(del);
+      boxesList.appendChild(row);
+    });
+  }
+
+  function loadExistingLabels(imagePath, subset, filename){
     const labelPath = `/media/labels/${subset}/${filename.replace(/\.[^/.]+$/, "")}.txt?nocache=${Date.now()}`;
     fetch(labelPath)
-      .then(res => { if (!res.ok) throw new Error('No labels'); return res.text(); })
-      .then(text => {
-        const lines = text.trim().split(/\r?\n/).filter(Boolean);
-        boxes = [];
-        lines.forEach(line => {
-          const parts = line.trim().split(/\s+/).map(Number);
-          // Erwartetes Format: class_id x_center y_center width height (YOLO, normiert 0..1)
-          const class_id = parts[0]; const x = parts[1], y = parts[2], w = parts[3], h = parts[4];
-          const cx = x * img.originalWidth;
-          const cy = y * img.originalHeight;
-          const bw = w * img.originalWidth;
-          const bh = h * img.originalHeight;
+      .then(r => { if(!r.ok) throw 0; return r.text(); })
+      .then(text=>{
+        boxes=[];
+        text.trim().split(/\r?\n/).filter(Boolean).forEach(line=>{
+          const p=line.trim().split(/\s+/).map(Number);
+          const [cid,x,y,w,h]=p;
+          const cx=x*img.originalWidth, cy=y*img.originalHeight;
+          const bw=w*img.originalWidth, bh=h*img.originalHeight;
           boxes.push({
-            class_id: String(class_id),
-            x_min: (cx - bw/2) * img.scale,
-            y_min: (cy - bh/2) * img.scale,
-            x_max: (cx + bw/2) * img.scale,
-            y_max: (cy + bh/2) * img.scale
+            class_id:+cid,
+            x_min:(cx-bw/2)*img.scale,
+            y_min:(cy-bh/2)*img.scale,
+            x_max:(cx+bw/2)*img.scale,
+            y_max:(cy+bh/2)*img.scale
           });
         });
-        drawAllBoxes();
+        refreshList(); drawAll();
       })
-      .catch(() => { /* keine vorhandenen Labels */ });
+      .catch(()=>{ /* keine Labels vorhanden */ });
   }
 
-  // CSRF für Django (falls nötig)
-  function getCsrfToken() {
-    const m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
-    return m ? decodeURIComponent(m[1]) : '';
+  function getCsrfToken(){
+    const m=document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    return m?decodeURIComponent(m[1]):'';
   }
 
-  function bindListenersOnce() {
-    if (listenersBound || !ensureDomRefs()) return;
+  function bindListeners(){
+    if(listenersBound || !ensureDomRefs()) return;
 
-    // Close
     closeBtn.addEventListener('click', hideModal);
+    classPicker.addEventListener('change',()=>{ currentClassId=+classPicker.value; });
 
-    // Zeichnen
-    canvas.addEventListener('mousedown', function (e) {
-      const { x, y } = getMousePos(e);
-
-      // Klick auf vorhandene Box => löschen
-      activeBoxIndex = boxes.findIndex(box =>
-        x >= box.x_min && x <= box.x_max &&
-        y >= box.y_min && y <= box.y_max
-      );
-      if (activeBoxIndex !== -1) {
-        if (confirm('Diese Box löschen?')) {
-          boxes.splice(activeBoxIndex, 1);
-          activeBoxIndex = null;
-          drawAllBoxes();
-        }
-        return;
-      }
-
-      startX = x; startY = y; isDrawing = true;
+    canvas.addEventListener('mousedown',e=>{
+      const {x,y}=getMousePos(e);
+      activeBoxIndex=boxes.findIndex(b=>x>=b.x_min&&x<=b.x_max&&y>=b.y_min&&y<=b.y_max);
+      if(activeBoxIndex!==-1){ drawAll(); return; }
+      startX=x; startY=y; isDrawing=true;
     });
 
-    canvas.addEventListener('mousemove', function (e) {
-      if (!isDrawing) return;
-      const { x: currentX, y: currentY } = getMousePos(e);
-      drawAllBoxes();
-      ctx.strokeStyle = 'green';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([6]);
-      ctx.strokeRect(
-        Math.min(startX, currentX),
-        Math.min(startY, currentY),
-        Math.abs(currentX - startX),
-        Math.abs(currentY - startY)
-      );
+    canvas.addEventListener('mousemove',e=>{
+      if(!isDrawing) return;
+      const {x:cx,y:cy}=getMousePos(e);
+      drawAll();
+      ctx.strokeStyle=colorForClass(currentClassId);
+      ctx.lineWidth=1; ctx.setLineDash([6]);
+      ctx.strokeRect(Math.min(startX,cx),Math.min(startY,cy),Math.abs(cx-startX),Math.abs(cy-startY));
       ctx.setLineDash([]);
     });
 
-    canvas.addEventListener('mouseup', function (e) {
-      if (!isDrawing) return;
-      isDrawing = false;
-      const { x: endX, y: endY } = getMousePos(e);
-      // Ignorieren, wenn Box extrem klein
-      if (Math.abs(endX - startX) < 3 || Math.abs(endY - startY) < 3) { drawAllBoxes(); return; }
-      boxes.push({
-        x_min: Math.min(startX, endX),
-        y_min: Math.min(startY, endY),
-        x_max: Math.max(startX, endX),
-        y_max: Math.max(startY, endY)
-      });
-      drawAllBoxes();
+    canvas.addEventListener('mouseup',e=>{
+      if(!isDrawing) return; isDrawing=false;
+      const {x:ex,y:ey}=getMousePos(e);
+      if(Math.abs(ex-startX)<3||Math.abs(ey-startY)<3){ drawAll(); return; }
+      boxes.push({ class_id:currentClassId, x_min:Math.min(startX,ex), y_min:Math.min(startY,ey), x_max:Math.max(startX,ex), y_max:Math.max(startY,ey) });
+      activeBoxIndex=boxes.length-1; refreshList(); drawAll();
     });
 
-    // Speichern
-    form.addEventListener('submit', function (e) {
+    canvas.addEventListener('dblclick',e=>{
+      const {x,y}=getMousePos(e);
+      const idx=boxes.findIndex(b=>x>=b.x_min&&x<=b.x_max&&y>=b.y_min&&y<=b.y_max);
+      if(idx!==-1){ boxes.splice(idx,1); activeBoxIndex=null; refreshList(); drawAll(); }
+    });
+
+    form.addEventListener('submit',e=>{
       e.preventDefault();
-
-      // In YOLO (normiert) umrechnen
-      const yoloBoxes = boxes.map(box => {
-        const x_center = ((box.x_min + box.x_max) / 2) / img.scale / img.originalWidth;
-        const y_center = ((box.y_min + box.y_max) / 2) / img.scale / img.originalHeight;
-        const w = (box.x_max - box.x_min) / img.scale / img.originalWidth;
-        const h = (box.y_max - box.y_min) / img.scale / img.originalHeight;
-        // Ohne Klassen-ID (oder nimm "0", wenn deine Pipeline es erwartet)
-        return `0 ${x_center.toFixed(6)} ${y_center.toFixed(6)} ${w.toFixed(6)} ${h.toFixed(6)}`;
+      const yoloLines=boxes.map(b=>{
+        const xc=((b.x_min+b.x_max)/2)/img.scale/img.originalWidth;
+        const yc=((b.y_min+b.y_max)/2)/img.scale/img.originalHeight;
+        const w=(b.x_max-b.x_min)/img.scale/img.originalWidth;
+        const h=(b.y_max-b.y_min)/img.scale/img.originalHeight;
+        return `${b.class_id} ${xc.toFixed(6)} ${yc.toFixed(6)} ${w.toFixed(6)} ${h.toFixed(6)}`;
       });
-
-      const fd = new FormData(form);
-      fd.append('boxes', JSON.stringify(yoloBoxes));
+      const fd=new FormData(form);
+      fd.append('boxes', JSON.stringify(yoloLines));
 
       fetch("{% url 'upload_annotated_image_existing' %}", {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCsrfToken() },
+        method:'POST',
+        headers:{ 'X-CSRFToken': getCsrfToken() },
         body: fd
       })
-        .then(r => r.ok ? r.json() : Promise.reject(r))
-        .then(data => {
-          alert((data && data.message) || 'Gespeichert!');
-          hideModal();
-          location.reload();
-        })
-        .catch(() => alert('Fehler beim Speichern.'));
+      .then(r=>r.ok?r.json():Promise.reject(r))
+      .then(data=>{ alert((data&&data.message)||'Gespeichert!'); hideModal(); location.reload(); })
+      .catch(()=>alert('Fehler beim Speichern.'));
     });
 
-    listenersBound = true;
+    listenersBound=true;
   }
 
   // ---- Public API ----
-  window.startAnnotation = function (imagePath, subset) {
-    if (!ensureDomRefs()) {
-      alert('Canvas/Form not found on page.');
-      return;
-    }
+  window.startAnnotation = function(imagePath, subset){
+    if(!ensureDomRefs()){ alert('Canvas/Form not found on page.'); return; }
+    populateClassPicker(); bindListeners();
 
-    bindListenersOnce();
+    boxes=[]; activeBoxIndex=null;
+    const filename=imagePath.split('/').pop();
+    document.getElementById('subset').value=subset;
+    document.getElementById('filename').value=filename;
 
-    boxes = [];
-    activeBoxIndex = null;
-
-    const filename = imagePath.split('/').pop();
-    document.getElementById('subset').value = subset;
-    document.getElementById('filename').value = filename;
-
-    img.onload = function () {
-      // auf verfügbare Breite skalieren
-      const maxW = Math.min(window.innerWidth * 0.9, 1000);
-      const scale = Math.min(1, maxW / img.width);
-
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-
-      img.originalWidth = img.width;
-      img.originalHeight = img.height;
-      img.scale = scale;
-
-      drawAllBoxes();
-
-      // vorhandene Labels nachladen
+    img.onload=function(){
+      const maxW=Math.min(window.innerWidth*0.9,1200);
+      const scale=Math.min(1, maxW/img.width);
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+      img.originalWidth=img.width; img.originalHeight=img.height; img.scale=scale;
+      drawAll();
       loadExistingLabels(imagePath, subset, filename);
-
       showModal();
     };
-
-    img.onerror = function () {
-      alert('Bild konnte nicht geladen werden.');
-    };
-
-    img.src = '/' + imagePath.replace(/^\/+/, '');
+    img.onerror=function(){ alert('Bild konnte nicht geladen werden.'); };
+    img.src='/' + imagePath.replace(/^\/+/, '');
   };
-
-})();
+})(); /* IIFE-Ende */
 </script>
-
 
 {% endblock %}
