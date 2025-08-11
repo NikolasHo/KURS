@@ -1,10 +1,20 @@
 names:
+- Default
 - Tomate
 - Zwiebel
 - Paprika
 - Gurke
 - Kartoffel
 - Cola
-nc: 6
+- Banane
+- Birne
+- Kiwi
+- Nektarine
+- Parmesan
+- Laktosefreie_Milch
+- Milch
+- Zartbitter_Schokoldae
+- Apfel
+nc: 16
 train: images/train
 val: images/val

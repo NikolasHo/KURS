@@ -1,5 +1,7 @@
 import io
 import os
+import base64
+import numpy as np
 from PIL import Image
 from django.conf import settings
 
@@ -12,48 +14,66 @@ except ImportError:
     model = None
 
 
-# Debug print helper - only prints when DEBUG is True in Django settings
 def debug_print(message):
     if settings.DEBUG:
         print(message)
 
 
-# Detects objects (ingredients) in an uploaded image using the trained YOLO model
-def detect_ingredients(image_file, conf_threshold=0.5):
+def detect_ingredients(image_file, conf_threshold=0.5, return_image=False):
+    """
+    Run YOLO on an uploaded image.
+
+    Returns:
+      - if return_image == False: detections: List[{'class', 'confidence', 'box':[x1,y1,x2,y2]}]
+      - if return_image == True:  (detections, data_url_png)
+    """
     debug_print("Starting object detection...")
 
-    # Ensure the model is available
-    if model:
-        debug_print(f"Model loaded from: {MODEL_PATH}")
-    else:
-        debug_print(f"Model could not be loaded. Expected at: {MODEL_PATH}")
-        debug_print("No model loaded.")
-        return []
+    if not model:
+        debug_print(f"Model could not be loaded. Expected at: {os.path.join(settings.BASE_DIR, 'runs', 'web-training', 'weights', 'best.pt')}")
+        return [] if not return_image else ([], None)
 
-    debug_print("Model available, reading image data...")
-    debug_print(f"Available model classes: {model.names}")
+    # Wichtig: stream des Uploads an den Anfang
+    try:
+        image_file.seek(0)
+    except Exception:
+        pass
 
-    # Read and convert the uploaded image to RGB format
     try:
         img = Image.open(io.BytesIO(image_file.read())).convert('RGB')
     except Exception as e:
         debug_print(f"Error loading image: {e}")
-        return []
+        return [] if not return_image else ([], None)
 
-    debug_print("Image successfully loaded and converted.")
-    debug_print(f"Running inference with conf_threshold={conf_threshold}...")
-
-    # Perform inference with the YOLO model
     results = model(img, imgsz=640, conf=conf_threshold)[0]
-    debug_print("Inference complete.")
 
-    # Process detection results
+    # Detections inkl. Boxen
     detections = []
-    debug_print("Processing results...")
-    for cls, conf in zip(results.boxes.cls, results.boxes.conf):
-        name = model.names[int(cls)]
-        debug_print(f"Detected: {name} with confidence {float(conf):.2f}")
-        detections.append({'class': name, 'confidence': float(conf)})
+    if results.boxes is not None and len(results.boxes) > 0:
+        xyxy = results.boxes.xyxy.cpu().numpy()
+        cls_ids = results.boxes.cls.cpu().numpy()
+        confs = results.boxes.conf.cpu().numpy()
+        for (x1, y1, x2, y2), cls_id, conf in zip(xyxy, cls_ids, confs):
+            name = model.names[int(cls_id)]
+            detections.append({
+                'class': name,
+                'confidence': float(conf),
+                'box': [int(x1), int(y1), int(x2), int(y2)]
+            })
 
-    debug_print("Object detection finished.")
-    return detections
+    if not return_image:
+        return detections
+
+    # Annotiertes Bild erzeugen
+    # results.plot() liefert ein BGR-ndarray; wir drehen die Kanäle nach RGB
+    plotted = results.plot()
+    plotted_rgb = plotted[:, :, ::-1]  # BGR -> RGB
+    pil_annotated = Image.fromarray(plotted_rgb)
+
+    buf = io.BytesIO()
+    pil_annotated.save(buf, format='PNG')
+    buf.seek(0)
+    b64 = base64.b64encode(buf.read()).decode('utf-8')
+    data_url = f"data:image/png;base64,{b64}"
+
+    return detections, data_url

@@ -11,8 +11,13 @@
     </div>
     <button type="button" id="btn-test" class="btn btn-primary">Erkennung starten</button>
   </form>
+
   <hr>
-  <h3>Ergebnisse</h3>
+  <h3>Annotiertes Bild</h3>
+  <img id="annotated-img" alt="Annotiertes Ergebnis" style="max-width:100%; display:none; border:1px solid #eee; border-radius:6px;" />
+
+  <hr>
+  <h3>Ergebnisse (JSON)</h3>
   <pre id="test-results" style="background:#f8f9fa; padding:1rem; border-radius:5px;"></pre>
 </div>
 
@@ -30,8 +35,10 @@ function getCookie(name) {
 document.getElementById('btn-test').addEventListener('click', () => {
   const input = document.getElementById('test_img');
   if (!input.files.length) return;
+
   const fd = new FormData();
   fd.append('image', input.files[0]);
+
   fetch('{% url "test_detection" %}', {
     method: 'POST',
     headers: { 'X-CSRFToken': getCookie('csrftoken') },
@@ -40,9 +47,16 @@ document.getElementById('btn-test').addEventListener('click', () => {
   .then(r => r.json())
   .then(data => {
     document.getElementById('test-results').textContent = JSON.stringify(data, null, 2);
+
+    const imgEl = document.getElementById('annotated-img');
+    if (data.success && data.image) {
+      imgEl.src = data.image;
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.style.display = 'none';
+    }
   })
   .catch(err => { document.getElementById('test-results').textContent = 'Fehler: '+err; });
 });
 </script>
-
 {% endblock %}

@@ -963,25 +963,25 @@ def bulk_save_ingredients(request):
     return JsonResponse({'success': True, 'added': added, 'updated': updated})
 
 
+# oben steht bereits: from classification.detection import detect_ingredients
+
 def test_detection(request):
     """
     Handle image upload for testing the object detection model.
-
-    - GET: Renders a simple HTML interface to test detection manually.
-    - POST: Accepts an uploaded image, runs detection, and returns results as JSON.
     """
     if request.method == 'POST':
-        # Check if an image file was uploaded
         if 'image' not in request.FILES:
             return JsonResponse({'success': False, 'error': 'No image.'}, status=400)
 
-        # Run detection on the uploaded image using the YOLO model
-        detections = detect_ingredients(request.FILES['image'], conf_threshold=0.5)
+        detections, data_url = detect_ingredients(request.FILES['image'], conf_threshold=0.5, return_image=True)
 
-        # Return detection results as JSON
-        return JsonResponse({'success': True, 'detections': detections})
+        return JsonResponse({
+            'success': True,
+            'detections': detections,
+            'image': data_url
+        })
 
-    # GET request: Render the test detection HTML page
     return render(request, 'pages/test_detection.html')
+
 
 
