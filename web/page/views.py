@@ -21,16 +21,15 @@ from django.http import HttpResponseServerError, JsonResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from .models import Ingredient, recipe
-from .forms import IngredientForm
-from taggit.models import Tag
-from .forms import RecipeForm
+from django.contrib import messages
 from django.db import transaction
+from taggit.models import Tag
 from datetime import datetime
 from ultralytics import YOLO
 from classification.detection import detect_ingredients
-
-
+from .forms import RecipeForm
+from .forms import IngredientForm
+from .models import Ingredient, recipe
 
 logger = logging.getLogger(__name__)
 
@@ -767,56 +766,76 @@ def upload_annotated_image_existing(request):
 
 model_weights = 'yolov5s.pt'
 
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.contrib import messages
+import os
+from ultralytics import YOLO
+
 def train_model(request):
     """
-    Handle training of a YOLO model using parameters submitted via a web form.
-
-    This view:
-    - Accepts POST requests with training hyperparameters
-    - Deletes the previous training output (if exists)
-    - Initializes a YOLO model and starts training
+    Startet YOLO-Training:
+    - Neu trainieren
+    - Resume vom letzten Run
+    - Fine-Tuning von angegebenem Checkpoint
     """
-    if request.method == 'POST':
-        try:
-            # Read hyperparameters from the form (with fallback defaults)
-            epochs = int(request.POST.get('epochs', 50))       # Number of epochs
-            imgsz = int(request.POST.get('imgsz', 640))        # Image size
-
-            debug_print(f"Training requested: {epochs} epochs, image size {imgsz}")
-        except ValueError:
-            # Handle invalid form input
-            return HttpResponseServerError('Invalid parameters.')
+    if request.method == "POST":
+        epochs = int(request.POST.get("epochs", 50))
+        imgsz = int(request.POST.get("imgsz", 640))
+        mode = request.POST.get("mode", "resume")
+        ckpt_path = (request.POST.get("ckpt_path") or "").strip()
 
         try:
-            # Remove previous training output directory, if it exists
-            output_dir = os.path.join(settings.BASE_DIR, 'runs', 'web-training')
-            if os.path.exists(output_dir):
-                debug_print(f"Removing previous training output at: {output_dir}")
-                shutil.rmtree(output_dir)
+            data_yaml_path = os.path.join(settings.BASE_DIR, "data.yaml")
 
-            # Initialize the YOLO model with pretrained weights
-            model = YOLO(model_weights)
-            debug_print("Model initialized. Starting training...")
+            if mode == "fresh":
+                # Komplett neu trainieren (von Scratch, z. B. YOLOv8n als Basisarchitektur)
+                model = YOLO("yolov8n.pt")  # oder "yolov8s.pt", je nach gewünschter Größe
+                model.train(data=data_yaml_path, epochs=epochs, imgsz=imgsz)
 
-            # Start training
-            model.train(
-                data=DATASET_CONFIG,  # Path to dataset.yaml
-                epochs=epochs,
-                imgsz=imgsz,
-                project=os.path.join(settings.BASE_DIR, 'runs'),
-                name='web-training',
-                # exist_ok not needed since we remove the folder before
-            )
+            elif mode == "resume":
+                default_last_ckpt = os.path.join(settings.BASE_DIR, "runs/detect/train/weights/last.pt")
+                if not os.path.exists(default_last_ckpt):
+                    messages.error(request, f"Kein letzter Checkpoint gefunden unter {default_last_ckpt}")
+                    return redirect("train_model")
+
+                model = YOLO(default_last_ckpt)
+                model.train(data=data_yaml_path, epochs=epochs, imgsz=imgsz, resume=True)
+
+            elif mode == "finetune":
+                lr0 = float(request.POST.get("lr0", 0.001))
+                batch = int(request.POST.get("batch", 16))
+                patience = int(request.POST.get("patience", 50))
+                freeze = int(request.POST.get("freeze", 0))
+                optimizer = request.POST.get("optimizer") or None
+
+                if not ckpt_path:
+                    ckpt_path = os.path.join(settings.BASE_DIR, "runs/detect/train/weights/best.pt")
+
+                if not os.path.exists(ckpt_path):
+                    messages.error(request, f"Checkpoint nicht gefunden: {ckpt_path}")
+                    return redirect("train_model")
+
+                model = YOLO(ckpt_path)
+                model.train(
+                    data=data_yaml_path,
+                    epochs=epochs,
+                    imgsz=imgsz,
+                    lr0=lr0,
+                    batch=batch,
+                    patience=patience,
+                    freeze=freeze,
+                    optimizer=optimizer
+                )
+
+            messages.success(request, "Training gestartet!")
+            return redirect("train_model")
+
         except Exception as e:
-            # Catch and report training errors
-            debug_print(f"Training failed: {e}")
-            return HttpResponseServerError(f'Training failed: {e}')
+            messages.error(request, f"Fehler beim Training: {e}")
+            return redirect("train_model")
 
-        # Return success response
-        return JsonResponse({'success': True, 'message': 'Training completed.'})
-
-    # GET: Render the training form page
-    return render(request, 'pages/train_model.html')
+    return render(request, "pages/train_model.html")
 
 
 
