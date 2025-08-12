@@ -40,9 +40,6 @@ urlpatterns = [
     path('detect-list/', views.detect_and_list, name='detect_and_list'),
     path('bulk-save/', views.bulk_save_ingredients, name='bulk_save_ingredients'),
     path('test-detect/', views.test_detection, name='test_detection'),
-
-    #Dev
-    path('test/', views.test, name='test'),
     
     
     #Settings

@@ -20,17 +20,25 @@
     <option value="no"  {% if annotated_filter == 'no'  %}selected{% endif %}>Nicht annotiert</option>
   </select>
 
+  <!-- NEU: Anzahl pro Seite -->
+ <select name="per_page" class="form-control mr-3" onchange="this.form.submit()">
+  {% for n in per_page_options %}
+    <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+  {% endfor %}
+</select>
+
+
   <button type="submit" class="btn btn-primary mr-2">Filtern</button>
-  {% if selected_class or annotated_filter != 'all' %}
+  {% if selected_class or annotated_filter != 'all' or per_page != 24 %}
     <a href="?" class="btn btn-link">Zurücksetzen</a>
   {% endif %}
 </form>
 
-<p class="text-muted">{{ images|length }} Bild(er) gefunden.</p>
+<p class="text-muted">{{ total_images }} Bild(er) gefunden.</p>
 
-{% if images %}
+{% if images_page and images_page.object_list %}
   <ul>
-    {% for img in images %}
+    {% for img in images_page.object_list %}
     <li style="margin-bottom: 10px;">
       <strong>{{ img.filename }}</strong>
       ({{ img.subset }}{% if img.inferred_class %} • {{ img.inferred_class }}{% endif %})
@@ -48,6 +56,40 @@
     </li>
     {% endfor %}
   </ul>
+
+<!-- Pager -->
+<nav aria-label="Bilder-Navigation">
+  <ul class="pagination">
+
+    {# Zurück #}
+    <li class="page-item {% if not images_page.has_previous %}disabled{% endif %}">
+      {% if images_page.has_previous %}
+        <a class="page-link"
+           href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ images_page.previous_page_number }}">« Zurück</a>
+      {% else %}
+        <span class="page-link">« Zurück</span>
+      {% endif %}
+    </li>
+
+    <li class="page-item disabled">
+      <span class="page-link">
+        Seite {{ images_page.number }} / {{ images_page.paginator.num_pages }}
+      </span>
+    </li>
+
+    {# Weiter #}
+    <li class="page-item {% if not images_page.has_next %}disabled{% endif %}">
+      {% if images_page.has_next %}
+        <a class="page-link"
+           href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ images_page.next_page_number }}">Weiter »</a>
+      {% else %}
+        <span class="page-link">Weiter »</span>
+      {% endif %}
+    </li>
+
+  </ul>
+</nav>
+
 {% else %}
   <p>No images found in dataset folders.</p>
 {% endif %}

@@ -1,4 +1,5 @@
 
+### imports
 import json
 import logging
 import os
@@ -10,16 +11,16 @@ import random
 import uuid
 import yaml
 import re
-
 import glob
+
+### from django imports
 from PIL import Image
-
-
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.http import HttpResponseServerError, JsonResponse
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from .models import Ingredient, recipe
 from .forms import IngredientForm
 from taggit.models import Tag
@@ -33,13 +34,9 @@ from classification.detection import detect_ingredients
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
 ###urls
 def base(request):
     return render(request, 'base.html', {})
-
-def test(request):
-    return render(request, 'pages/test.html', {})
 
 
 def ingredients_list(request):
@@ -602,9 +599,8 @@ def annotate_image(request):
     """
     class_names = load_class_names()
 
-    # Filter aus Query-Params
-    selected_class = (request.GET.get('cls') or '').strip()   # Klassenname oder ''
-    annotated_filter = request.GET.get('annotated', 'all')    # 'all' | 'yes' | 'no'
+    selected_class = (request.GET.get('cls') or '').strip()
+    annotated_filter = request.GET.get('annotated', 'all')
 
     image_paths = []
     for subset in ['train', 'val']:
@@ -616,7 +612,6 @@ def annotate_image(request):
             rel_path = os.path.relpath(img_path, settings.MEDIA_ROOT).replace("\\", "/")
             label_path = os.path.join(label_dir, os.path.splitext(filename)[0] + ".txt")
 
-            # Klasse **aus Label** lesen (erste Spalte = class_id), nicht mehr aus dem Dateinamen
             inferred_class = ''
             if os.path.exists(label_path):
                 try:
@@ -629,10 +624,8 @@ def annotate_image(request):
                 except Exception:
                     inferred_class = ''
 
-            # Annotierungsstatus bestimmen (benutzt deine bestehende Logik)
             annotated = is_custom_annotated(label_path)
 
-            # Filter anwenden
             if selected_class and inferred_class != selected_class:
                 continue
             if annotated_filter == 'yes' and not annotated:
@@ -648,13 +641,34 @@ def annotate_image(request):
                 'inferred_class': inferred_class,
             })
 
-    print(f"[ANNOTATE_IMAGE] Found {len(image_paths)} images after filtering.")
+    # --- NEU: Pagination ---
+    per_page = int(request.GET.get('per_page', 24))  # Standard: 24 pro Seite
+    paginator = Paginator(image_paths, per_page)
+    page_number = request.GET.get('page', 1)
+
+    try:
+        images_page = paginator.page(page_number)
+    except PageNotAnInteger:
+        images_page = paginator.page(1)
+    except EmptyPage:
+        images_page = paginator.page(paginator.num_pages)
+
+    # Querystring ohne "page" für die Pager-Links
+    qs = request.GET.copy()
+    qs.pop('page', None)
+    base_qs = qs.urlencode()
+
+    per_page_options = [10, 25, 50, 100, 200]
 
     return render(request, 'pages/annotate_image.html', {
         'class_names': class_names,
-        'images': image_paths,
+        'images_page': images_page,
+        'total_images': paginator.count,
         'selected_class': selected_class,
         'annotated_filter': annotated_filter,
+        'per_page': per_page,
+        'per_page_options': per_page_options,  # <--- hier
+        'base_qs': base_qs,
     })
 
 
